@@ -1,0 +1,13 @@
+package:
+  name: z3-solver
+  version: 4.12.1.0
+  top-level:
+    - z3
+source:
+  url: https://files.pythonhosted.org/packages/15/76/f16bfcfd3c7e8f929a4f26dc554bc8a086823c9225975b7b67b21ccb4d69/z3-solver-4.12.1.0.tar.gz
+  sha256: c6b7c0f1c595ba47609d0e02b0cc263dc755def9f8d6f51c1943aec040a1eb2d
+about:
+  home: https://github.com/Z3Prover/z3
+  PyPI: https://pypi.org/project/z3-solver
+  summary: an efficient SMT solver library
+  license: MIT License
