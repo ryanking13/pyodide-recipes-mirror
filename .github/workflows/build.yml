@@ -1,0 +1,29 @@
+name: Build Recipes
+
+on:
+  push:
+  pull_request:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install-browers:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Check emscripten version
+        run: |
+          pip install git+https://github.com/ryanking13/pyodide.git@build-recipes-oot#subdirectory=pyodide-build
+          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: ${{ env.EMSCRIPTEN_VERSION }}
+      - name: Build recipes
+        run: |
+          pyodide build-recipes "*"
