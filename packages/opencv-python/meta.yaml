@@ -54,4 +54,6 @@ build:
     export NUMPY_INCLUDE_DIR="$HOSTINSTALLDIR/lib/python$PYMAJOR.$PYMINOR/site-packages/numpy/core/include/"
     export FFMPEG_ROOT="$WASM_LIBRARY_DIR"
 
+    embuilder build libjpeg zlib libpng --pic
+
     source $PKGDIR/cmake/build_args.sh
