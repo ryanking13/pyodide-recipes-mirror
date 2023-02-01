@@ -10,20 +10,82 @@ permissions:
   contents: read
 
 jobs:
-  install-browers:
+  build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - name: Install pyodide-build
+        run : |
+          pip install git+https://github.com/ryanking13/pyodide.git@build-recipes-oot#subdirectory=pyodide-build
       - name: Check emscripten version
         run: |
-          pip install git+https://github.com/ryanking13/pyodide.git@build-recipes-oot#subdirectory=pyodide-build
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
       - uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
       - name: Build recipes
         run: |
-          pyodide build-recipes "*"
+          pyodide build-recipes "*" --install --install-dir=./repodata
+
+      - name: Store artifacts build
+        uses: actions/upload-artifact@v2
+        with:
+          name: repodata
+          path: ./repodata/
+          retention-days: 15
+
+  test:
+    runs-on: ubuntu-22.04
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        pyodide-version: [0.22.1]
+        test-config: [
+          {runner: selenium, runtime: chrome, runtime-version: latest },
+        ]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - uses: pyodide/pyodide-actions/download-pyodide@v1
+        with:
+          version: 0.22.1
+          to: dist
+
+      - uses: pyodide/pyodide-actions/install-browser@v1
+        with:
+          runner: ${{ matrix.test-config.runner }}
+          browser: ${{ matrix.test-config.runtime }}
+          browser-version: ${{ matrix.test-config.runtime-version }}
+
+      - name: Install requirements
+        shell: bash -l {0}
+        run: |
+          python3 -m pip install pytest pytest-pyodide
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: repodata
+          path: ./repodata/
+
+      - name: Copy repodata
+        run: |
+          cp ./repodata/* ./dist/
+
+      - name: Run tests
+        run: |
+          pytest -v \
+            --dist-dir=./dist/ \
+            --runner=${{ matrix.test-config.runner }} \
+            --rt ${{ matrix.test-config.runtime }} \
+            packages
