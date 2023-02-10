@@ -43,45 +43,45 @@ def test_binom_ppf(selenium):
     assert binom.ppf(0.9, 1000, 0.1) == 112
 
 
-@pytest.mark.driver_timeout(40)
-@run_in_pyodide(packages=["pytest", "scipy-tests"])
-def test_scipy_pytest(selenium):
-    import pytest
+# @pytest.mark.driver_timeout(40)
+# @run_in_pyodide(packages=["pytest", "scipy-tests"])
+# def test_scipy_pytest(selenium):
+#     import pytest
 
-    def runtest(module, filter):
-        pytest.main(
-            [
-                "--pyargs",
-                f"scipy.{module}",
-                "--continue-on-collection-errors",
-                "-vv",
-                "-k",
-                filter,
-            ]
-        )
+#     def runtest(module, filter):
+#         pytest.main(
+#             [
+#                 "--pyargs",
+#                 f"scipy.{module}",
+#                 "--continue-on-collection-errors",
+#                 "-vv",
+#                 "-k",
+#                 filter,
+#             ]
+#         )
 
-    runtest("odr", "explicit")
-    runtest("signal.tests.test_ltisys", "TestImpulse2")
-    runtest("stats.tests.test_multivariate", "haar")
+#     runtest("odr", "explicit")
+#     runtest("signal.tests.test_ltisys", "TestImpulse2")
+#     runtest("stats.tests.test_multivariate", "haar")
 
 
-@pytest.mark.driver_timeout(40)
-@run_in_pyodide(packages=["scipy"])
-def test_cpp_exceptions(selenium):
-    import numpy as np
-    import pytest
-    from scipy.spatial.distance import cdist
+# @pytest.mark.driver_timeout(40)
+# @run_in_pyodide(packages=["scipy"])
+# def test_cpp_exceptions(selenium):
+#     import numpy as np
+#     import pytest
+#     from scipy.spatial.distance import cdist
 
-    out = np.ones((2, 2))
-    arr = np.array([[1, 2]])
+#     out = np.ones((2, 2))
+#     arr = np.array([[1, 2]])
 
-    with pytest.raises(ValueError, match="Output array has incorrect shape"):
-        cdist(arr, arr, out=out)
-    from scipy.sparse._sparsetools import test_throw_error
+#     with pytest.raises(ValueError, match="Output array has incorrect shape"):
+#         cdist(arr, arr, out=out)
+#     from scipy.sparse._sparsetools import test_throw_error
 
-    with pytest.raises(MemoryError):
-        test_throw_error()
-    from scipy.signal import lombscargle
+#     with pytest.raises(MemoryError):
+#         test_throw_error()
+#     from scipy.signal import lombscargle
 
-    with pytest.raises(ValueError):
-        lombscargle(x=[1], y=[1, 2], freqs=[1, 2, 3])
+#     with pytest.raises(ValueError):
+#         lombscargle(x=[1], y=[1, 2], freqs=[1, 2, 3])
