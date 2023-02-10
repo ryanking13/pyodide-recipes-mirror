@@ -20,7 +20,8 @@ jobs:
       - name: Install pyodide-build and build dependencies
         run : |
           pip install git+https://github.com/ryanking13/pyodide.git@build-recipes-oot#subdirectory=pyodide-build
-
+          pip install setuptools --upgrade
+          
           sudo apt update
           sudo apt install gfortran f2c
           
