@@ -32,7 +32,7 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
       - name: Build recipes
         run: |
-          pyodide build-recipes "*" !scipy --install --install-dir=./repodata
+          pyodide build-recipes "*,!scipy" --install --install-dir=./repodata
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
