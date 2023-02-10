@@ -75,7 +75,7 @@ jobs:
         shell: bash -l {0}
         run: |
           python3 -m pip install pytest pytest-pyodide
-          sudo apt install jq
+          sudo apt install jq sponge
 
       - name: Download build artifact
         uses: actions/download-artifact@v2
