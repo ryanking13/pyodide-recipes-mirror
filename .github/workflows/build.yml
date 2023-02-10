@@ -75,6 +75,7 @@ jobs:
         shell: bash -l {0}
         run: |
           python3 -m pip install pytest pytest-pyodide
+          sudo apt install jq
 
       - name: Download build artifact
         uses: actions/download-artifact@v2
@@ -85,6 +86,7 @@ jobs:
       - name: Copy repodata
         run: |
           cp ./repodata/* ./dist/
+          jq '.info.version = "0.22.1"' dist/repodata.json | sponge dist/repodata.json
 
       - name: Run tests
         run: |
