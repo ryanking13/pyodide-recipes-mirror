@@ -75,7 +75,7 @@ jobs:
       - name: Install requirements
         shell: bash -l {0}
         run: |
-          python3 -m pip install pytest pytest-pyodide
+          python3 -m pip install pytest pytest-pyodide pytest-httpserver
           sudo apt install jq
 
       - name: Download build artifact
