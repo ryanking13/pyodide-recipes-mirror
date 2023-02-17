@@ -33,6 +33,7 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
       - name: Build recipes
         run: |
+          pyodide xbuildenv install --download --url https://output.circle-artifacts.com/output/job/b6554abb-630f-47fb-b576-26ffc74840c1/artifacts/0/root/repo/xbuildenv.tar.gz
           pyodide build-recipes "*" --install --install-dir=./repodata
 
       - name: Store artifacts build
