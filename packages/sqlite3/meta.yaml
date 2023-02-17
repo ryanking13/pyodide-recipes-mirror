@@ -9,7 +9,7 @@ package:
 build:
   type: cpython_module
   script: |
-    mkdir dist
+    mkdir -p dist
     export DISTDIR=$(pwd)/dist
 
     export FILES=(
