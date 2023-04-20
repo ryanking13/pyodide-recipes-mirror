@@ -21,6 +21,14 @@ jobs:
         run : |
           pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pip install setuptools --upgrade
+
+          # TODO: fix pyodide/tools/deploy_s3.py to not compress an archive to gz
+          wget http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2 -O xbuildenv.tar.bz2.gz
+          gzip -d xbuildenv.tar.bz2.gz
+          mkdir .pyodide-xbuildenv
+          tar -xvf xbuildenv.tar.bz2 -C .pyodide-xbuildenv
+          
+          pyodide xbuildenv install
           
           sudo apt update
           sudo apt install gfortran f2c
@@ -34,13 +42,6 @@ jobs:
 
       - name: Build recipes
         run: |
-          # TODO: fix pyodide/tools/deploy_s3.py to not compress an archive to gz
-          wget http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2 -O xbuildenv.tar.bz2.gz
-          gzip -d xbuildenv.tar.bz2.gz
-          mkdir .pyodide-xbuildenv
-          tar -xvf xbuildenv.tar.bz2 -C .pyodide-xbuildenv
-          
-          pyodide xbuildenv install
           pyodide build-recipes "*" --install --install-dir=./repodata
 
       - name: Store artifacts build
