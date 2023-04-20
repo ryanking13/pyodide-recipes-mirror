@@ -1,0 +1,26 @@
+package:
+  name: numpy
+  version: 1.24.2
+  tag:
+    - min-scipy-stack
+  top-level:
+    - numpy
+source:
+  url: https://files.pythonhosted.org/packages/e4/a9/6704bb5e1d1d778d3a6ee1278a8d8134f0db160e09d52863a24edb58eab5/numpy-1.24.2.tar.gz
+  sha256: 003a9f530e880cb2cd177cba1af7220b9aa42def9c4afc2a2fc3ee6be7eb2b22
+
+build:
+  backend-flags: --disable-optimization
+  cflags: |
+    -Wno-return-type
+  cross-build-env: true
+  cross-build-files:
+    - numpy/core/include/numpy/numpyconfig.h
+    - numpy/core/include/numpy/_numpyconfig.h
+    - numpy/core/lib/libnpymath.a
+    - numpy/random/lib/libnpyrandom.a
+about:
+  home: https://www.numpy.org
+  PyPI: https://pypi.org/project/numpy
+  summary: NumPy is the fundamental package for array computing with Python.
+  license: BSD
