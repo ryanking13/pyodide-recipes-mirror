@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  contents: write
 
 jobs:
   build:
@@ -48,9 +49,12 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             ./repodata/*.whl
+
 
   # FIXME: blocked by: https://github.com/pyodide/pytest-pyodide/pull/87
   # test:

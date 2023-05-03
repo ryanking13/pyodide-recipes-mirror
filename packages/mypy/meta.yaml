@@ -11,6 +11,7 @@ build:
   script: |
     export MYPY_USE_MYPYC=1
     export MYPYC_OPT_LEVEL=3
+  unvendor-tests: false
 about:
   home: http://www.mypy-lang.org/
   PyPI: https://pypi.org/project/mypy
