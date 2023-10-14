@@ -34,9 +34,30 @@ jobs:
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
 
-      - name: Build recipes
+      - name: Calculate recipes to build (pull_request)
+        if: github.event_name == 'pull_request'
+        id: calculate_recipes_pr
+        run: |
+          python ./tools/calc_diff.py \
+            --base ${{ github.base_ref }} \
+            --head ${{ github.head_ref }} \
+            >> $CHANGED_RECIPES
+
+          if [ -s $CHANGED_RECIPES ]; then
+            echo "recipes=$CHANGED_RECIPES,tag:core" >> "$GITHUB_OUTPUT"
+          else
+            echo "recipes=tag:core" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build recipes (full)
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || ${{ !contains(github.event.head_commit.message, '[full build]') }}
         run: |
           pyodide build-recipes "*" --install --install-dir=./repodata
+
+      - name: Build recipes (changed only)
+        if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
+        run: |
+          pyodide build-recipes "$CHANGED_RECIPES" --install --install-dir=./repodata 
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
