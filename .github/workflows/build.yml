@@ -54,57 +54,55 @@ jobs:
           files: |
             ./repodata/*.whl
 
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        test-config: [
+          {runner: selenium, runtime: chrome, runtime-version: latest },
+        ]
 
-  # FIXME: blocked by: https://github.com/pyodide/pytest-pyodide/pull/87
-  # test:
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-latest]
-  #       test-config: [
-  #         {runner: selenium, runtime: chrome, runtime-version: latest },
-  #       ]
+    steps:
+      - uses: actions/checkout@v3
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-  #     - uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.11"
+      - name: Download latest Pyodide
+        run: |
+          wget http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/pyodide-core.tar.bz2
+          tar -xvf pyodide-core.tar.bz2
+          mv pyodide dist
 
-  #     - name: Download latest Pyodide
-  #       run: |
-  #         wget http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/pyodide-core.tar.bz2
-  #         tar -xvf pyodide-core.tar.bz2
-  #         mv pyodide dist
+      - uses: pyodide/pyodide-actions/install-browser@v1
+        with:
+          runner: ${{ matrix.test-config.runner }}
+          browser: ${{ matrix.test-config.runtime }}
+          browser-version: ${{ matrix.test-config.runtime-version }}
 
-  #     - uses: pyodide/pyodide-actions/install-browser@v1
-  #       with:
-  #         runner: ${{ matrix.test-config.runner }}
-  #         browser: ${{ matrix.test-config.runtime }}
-  #         browser-version: ${{ matrix.test-config.runtime-version }}
+      - name: Install requirements
+        shell: bash -l {0}
+        run: |
+          python3 -m pip install pytest pytest-pyodide pytest-httpserver
 
-  #     - name: Install requirements
-  #       shell: bash -l {0}
-  #       run: |
-  #         python3 -m pip install pytest pytest-pyodide pytest-httpserver
+      - name: Download build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: repodata
+          path: ./repodata/
 
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: repodata
-  #         path: ./repodata/
+      - name: Copy repodata
+        run: |
+          cp ./repodata/* ./dist/
 
-  #     - name: Copy repodata
-  #       run: |
-  #         cp ./repodata/* ./dist/
-
-  #     - name: Run tests
-  #       run: |
-  #         pytest -v \
-  #           --dist-dir=./dist/ \
-  #           --runner=${{ matrix.test-config.runner }} \
-  #           --rt ${{ matrix.test-config.runtime }} \
-  #           packages
+      - name: Run tests
+        run: |
+          pytest -v \
+            --dist-dir=./dist/ \
+            --runner=${{ matrix.test-config.runner }} \
+            --rt ${{ matrix.test-config.runtime }} \
+            packages
