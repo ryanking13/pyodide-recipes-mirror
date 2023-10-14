@@ -79,21 +79,21 @@ def main():
     ).stdout.split("\n")
 
     # 2. Only keep the changes happened in the recipe directory
-    diff = [f for f in diff if f.startswith(recipe_dir_relative)]
+    diff = [Path(f).resolve() for f in diff if f.startswith(recipe_dir_relative)]
 
     # 3. find package names from the recipe directory
     #    say the recipe directory is `packages`,
     #    and if there is a file `packages/abc/...`,
     #    then `abc` is a package name
-    packages = []
+    packages = set()
     for f in diff:
-        while f.parent != BASE_DIR:
+        while f.parent != recipe_dir:
             f = f.parent
 
         if not f.is_dir():  # ignore files in the recipe directory
             continue
 
-        packages.append(f.name)
+        packages.add(f.name)
 
     # 4. print the list of packages
     if packages:
