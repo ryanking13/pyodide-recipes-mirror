@@ -114,11 +114,6 @@ jobs:
           browser: ${{ matrix.test-config.runtime }}
           browser-version: ${{ matrix.test-config.runtime-version }}
 
-      - name: Install requirements
-        shell: bash -l {0}
-        run: |
-          conda install pytest pytest-pyodide pytest-httpserver
-
       - name: Download build artifact
         uses: actions/download-artifact@v2
         with:
