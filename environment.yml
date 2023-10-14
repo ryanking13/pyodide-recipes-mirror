@@ -1,0 +1,23 @@
+name: pyodide-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - nodejs
+  - ccache
+  - f2c
+  - pkg-config
+  - swig
+  - make
+  - cmake
+  - pkg-config
+  - texinfo
+  - autoconf
+  - automake
+  - libtool
+  - wget
+  - setuptools
+  - pip:
+    - pytest
+    - pytest-pyodide
+    - pytest-httpserver
