@@ -50,14 +50,14 @@ jobs:
           fi
 
       - name: Build recipes (full)
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || ${{ contains(github.event.head_commit.message, '[full build]') }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
           pyodide build-recipes "*" --install --install-dir=./repodata
 
       - name: Build recipes (changed only)
         if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
         run: |
-          pyodide build-recipes "$CHANGED_RECIPES" --install --install-dir=./repodata 
+          pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
