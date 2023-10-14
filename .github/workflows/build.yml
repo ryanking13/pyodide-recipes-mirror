@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: pyodide-env
@@ -23,8 +23,8 @@ jobs:
 
       - name: Install latest pyodide-build and build dependencies
         run : |
-          pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pip install setuptools --upgrade
+          pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
 
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
 
