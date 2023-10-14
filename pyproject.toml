@@ -1,0 +1,80 @@
+[tool.mypy]
+python_version = "3.11"
+show_error_codes = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+plugins = ["pydantic.mypy"]
+
+# Strict checks
+warn_unused_configs = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = false
+no_implicit_reexport = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+  "pytest_pyodide",
+  "pytest_pyodide.runner",
+  "pytest_pyodide.utils",
+  "auditwheel_emscripten.*"
+]
+ignore_missing_imports = true
+
+
+[tool.ruff]
+select = [
+  "B0",     # bugbear (all B0* checks enabled by default)
+  "B904",   # bugbear (Within an except clause, raise exceptions with raise ... from err)
+  "B905",   # bugbear (zip() without an explicit strict= parameter set.)
+  "C9",     # mccabe complexity
+  "E",      # pycodestyles
+  "W",      # pycodestyles
+  "F",      # pyflakes
+  "I",      # isort
+  "PGH",    # pygrep-hooks
+  "PLC",    # pylint conventions
+  "PLE",    # pylint errors
+  "UP",     # pyupgrade
+]
+ignore = ["E402", "E501", "E731", "E741"]
+exclude = ["packages/**/*.py"]
+# line-length = 219  # E501: Recommended goal is 88 to match black
+target-version = "py311"
+
+[tool.ruff.isort]
+known-first-party = [
+  "pyodide",
+  "pyodide_js",
+  "micropip",
+  "pyodide_build",
+  "_pyodide",
+  "js",
+]
+known-third-party = [
+  "build",
+  "pyodide_lock",
+]
+
+[tool.ruff.mccabe]
+max-complexity = 31  # C901: Recommended goal is 10
+
+[tool.pytest.ini_options]
+addopts = '''
+--ignore-glob="**/dist/"
+--ignore-glob="packages/**/extras/"
+--tb=short
+--dist-dir=dist'''
+testpaths = [
+    "packages",
+]
+asyncio_mode = "strict"
