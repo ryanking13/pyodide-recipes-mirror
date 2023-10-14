@@ -50,7 +50,7 @@ jobs:
           fi
 
       - name: Build recipes (full)
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || ${{ !contains(github.event.head_commit.message, '[full build]') }}
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || ${{ contains(github.event.head_commit.message, '[full build]') }}
         run: |
           pyodide build-recipes "*" --install --install-dir=./repodata
 
