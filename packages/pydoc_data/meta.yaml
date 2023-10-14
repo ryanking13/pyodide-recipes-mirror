@@ -1,0 +1,15 @@
+package:
+  name: pydoc_data
+  version: 1.0.0 # Nonsense
+  tag:
+    - always
+  top-level:
+    - pydoc_data
+source:
+  sha256: $(PYTHON_ARCHIVE_SHA256)
+  url: $(PYTHON_ARCHIVE_URL)
+build:
+  type: cpython_module
+  script: |
+    cd Lib
+    tar --exclude=__pycache__ -cf - pydoc_data | tar -C $DISTDIR -xf -
