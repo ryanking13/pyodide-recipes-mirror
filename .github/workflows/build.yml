@@ -42,7 +42,7 @@ jobs:
         id: calculate_recipes_pr
         shell: bash -l {0}
         run: |
-          CHANGED_RECIPES=$(python ./tools/calc_diff.py \
+          export CHANGED_RECIPES=$(python ./tools/calc_diff.py \
             --base ${{ github.base_ref }} \
             --target ${{ github.head_ref }})
 
