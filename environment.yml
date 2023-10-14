@@ -16,4 +16,9 @@ dependencies:
   - automake
   - libtool
   - wget
-  - pip
+  - setuptools
+  - pip:
+    - "--editable=git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build"
+    - pytest
+    - pytest-pyodide
+    - pytest-httpserver
