@@ -58,6 +58,7 @@ jobs:
       - name: Build recipes (changed only)
         if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
         run: |
+          export PKG_CONFIG_PATH=$(pwd)/packages/.libs/lib/pkgconfig  # FIXME: move to pyodide-build
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
 
       - name: Store artifacts build
