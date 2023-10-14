@@ -14,19 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      
+      - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: "3.11"
+          activate-environment: pyodide-env
+          environment-file: environment.yml
+          channels: conda-forge
+
       - name: Install latest pyodide-build and build dependencies
         run : |
           pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pip install setuptools --upgrade
 
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
-
-          sudo apt update
-          sudo apt upgrade
-          sudo apt install gfortran f2c pkg-config
 
       - name: Check emscripten version
         run: |
