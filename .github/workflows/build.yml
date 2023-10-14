@@ -48,6 +48,8 @@ jobs:
             --base origin/${{ github.base_ref }} \
             --target ${{ github.head_ref }})
 
+          echo "Changed recipes: $CHANGED_RECIPES"
+
           # If there are no changed recipes, we build only core packages sets
           if [ -z "$CHANGED_RECIPES" ]; then
             echo "recipes=tag:core" >> "$GITHUB_OUTPUT"
