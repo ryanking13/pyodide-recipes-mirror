@@ -4,7 +4,6 @@ Various common utilities for testing.
 import re
 
 import pytest
-
 from pytest_pyodide.utils import package_is_built as _package_is_built
 
 
