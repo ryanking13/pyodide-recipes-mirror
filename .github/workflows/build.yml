@@ -25,6 +25,7 @@ jobs:
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
 
           sudo apt update
+          sudo apt upgrade
           sudo apt install gfortran f2c pkg-config
 
       - name: Check emscripten version
