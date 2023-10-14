@@ -36,6 +36,7 @@ jobs:
 
       - name: Build recipes
         run: |
+          export PKG_CONFIG_PATH=$(pwd)/packages/.libs/lib/pkgconfig  # FIXME: move to pyodide-build
           pyodide build-recipes "*" --install --install-dir=./repodata
 
       - name: Store artifacts build
