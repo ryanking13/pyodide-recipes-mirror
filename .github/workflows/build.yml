@@ -101,9 +101,10 @@ jobs:
 
       - name: Run tests
         run: |
+          # FIXME: skip webworker tests
           pytest -v \
             --dist-dir=./dist/ \
             --runner=${{ matrix.test-config.runner }} \
             --rt ${{ matrix.test-config.runtime }} \
-            -k "not webworker" \  # FIXME: skip webworker tests
+            -k "not webworker" \
             packages
