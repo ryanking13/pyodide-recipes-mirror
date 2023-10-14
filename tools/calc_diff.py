@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
         "--diff-filter",
         help="The diff filter to use",
         type=str,
-        default="AMR", # Added, Modified, Renamed
+        default="AMR",  # Added, Modified, Renamed
     )
     parser.add_argument(
         "-d",
@@ -66,7 +66,16 @@ def main():
 
     # 1. Get the list of all files that have been modified
     diff = sp.run(
-        ["git", "diff", "--name-only", f"--diff-filter={args.diff_filter}", base, target], capture_output=True, text=True
+        [
+            "git",
+            "diff",
+            "--name-only",
+            f"--diff-filter={args.diff_filter}",
+            base,
+            target,
+        ],
+        capture_output=True,
+        text=True,
     ).stdout.split("\n")
 
     # 2. Only keep the changes happened in the recipe directory
@@ -80,14 +89,15 @@ def main():
     for f in diff:
         while f.parent != BASE_DIR:
             f = f.parent
-        
-        if not f.is_dir(): # ignore files in the recipe directory
+
+        if not f.is_dir():  # ignore files in the recipe directory
             continue
 
         packages.append(f.name)
 
     # 4. print the list of packages
     print(args.separator.join(packages))
+
 
 if __name__ == "__main__":
     main()
