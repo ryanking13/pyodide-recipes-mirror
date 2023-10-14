@@ -1,0 +1,14 @@
+package:
+  name: packaging
+  version: "23.1"
+  top-level:
+    - packaging
+source:
+  sha256: a392980d2b6cffa644431898be54b0045151319d1e7ec34f0cfed48767dd334f
+  url: https://files.pythonhosted.org/packages/b9/6c/7c6658d258d7971c5eb0d9b69fa9265879ec9a9158031206d47800ae2213/packaging-23.1.tar.gz
+
+about:
+  home: https://github.com/pypa/packaging
+  PyPI: https://pypi.org/project/packaging
+  summary: Core utilities for Python packages
+  license: BSD-2-Clause or Apache-2.0
