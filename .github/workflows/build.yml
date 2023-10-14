@@ -38,10 +38,9 @@ jobs:
         if: github.event_name == 'pull_request'
         id: calculate_recipes_pr
         run: |
-          python ./tools/calc_diff.py \
+          CHANGED_RECIPES=$(python ./tools/calc_diff.py \
             --base ${{ github.base_ref }} \
-            --head ${{ github.head_ref }} \
-            >> $CHANGED_RECIPES
+            --head ${{ github.head_ref }})
 
           if [ -s $CHANGED_RECIPES ]; then
             echo "recipes=$CHANGED_RECIPES,tag:core" >> "$GITHUB_OUTPUT"
