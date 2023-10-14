@@ -96,7 +96,8 @@ def main():
         packages.append(f.name)
 
     # 4. print the list of packages
-    print(args.separator.join(packages))
+    if packages:
+        print(args.separator.join(packages))
 
 
 if __name__ == "__main__":

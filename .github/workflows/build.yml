@@ -42,10 +42,11 @@ jobs:
             --base ${{ github.base_ref }} \
             --target ${{ github.head_ref }})
 
-          if [ -s $CHANGED_RECIPES ]; then
-            echo "recipes=$CHANGED_RECIPES,tag:core" >> "$GITHUB_OUTPUT"
-          else
+          # If there are no changed recipes, we build only core packages sets
+          if [ -z "$CHANGED_RECIPES" ]; then
             echo "recipes=tag:core" >> "$GITHUB_OUTPUT"
+          else
+            echo "recipes=$CHANGED_RECIPES,tag:core" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build recipes (full)
