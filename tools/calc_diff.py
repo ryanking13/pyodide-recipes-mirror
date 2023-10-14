@@ -3,6 +3,10 @@
 import argparse
 import shutil
 import subprocess as sp
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.parent
+RECIPE_DIR = Path(__file__).parent.parent / "packages"
 
 
 def parse_args() -> argparse.Namespace:
@@ -14,6 +18,27 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "-t", "--target", help="The target commit", type=str, default="HEAD"
+    )
+    parser.add_argument(
+        "-f",
+        "--diff-filter",
+        help="The diff filter to use",
+        type=str,
+        default="AMR", # Added, Modified, Renamed
+    )
+    parser.add_argument(
+        "-d",
+        "--recipe-dir",
+        help="The directory containing the recipes",
+        type=str,
+        default=RECIPE_DIR,
+    )
+    parser.add_argument(
+        "-s",
+        "--separator",
+        help="The separator to use",
+        type=str,
+        default=",",
     )
     return parser.parse_args()
 
@@ -31,26 +56,38 @@ def main():
 
     base = args.base
     target = args.target
+    recipe_dir = Path(args.recipe_dir).resolve()
 
-    print(f"Calculating diff between {base} and {target}")
+    try:
+        recipe_dir_relative = str(recipe_dir.relative_to(BASE_DIR))
+    except ValueError:
+        print(f"Recipe directory {recipe_dir} is not under {BASE_DIR}")
+        exit(1)
 
+    # 1. Get the list of all files that have been modified
     diff = sp.run(
-        ["git", "diff", "--name-only", base, target], capture_output=True, text=True
+        ["git", "diff", "--name-only", f"--diff-filter={args.diff_filter}", base, target], capture_output=True, text=True
     ).stdout.split("\n")
-    diff = [x for x in diff if x != ""]
 
-    print(f"Found {len(diff)} files changed")
+    # 2. Only keep the changes happened in the recipe directory
+    diff = [f for f in diff if f.startswith(recipe_dir_relative)]
 
-    for file in diff:
-        print(f"Diff for {file}:")
-        print(
-            sp.run(
-                ["git", "diff", base, target, file], capture_output=True, text=True
-            ).stdout
-        )
+    # 3. find package names from the recipe directory
+    #    say the recipe directory is `packages`,
+    #    and if there is a file `packages/abc/...`,
+    #    then `abc` is a package name
+    packages = []
+    for f in diff:
+        while f.parent != BASE_DIR:
+            f = f.parent
+        
+        if not f.is_dir(): # ignore files in the recipe directory
+            continue
 
-    print("Done")
+        packages.append(f.name)
 
+    # 4. print the list of packages
+    print(args.separator.join(packages))
 
 if __name__ == "__main__":
     main()
