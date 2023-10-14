@@ -99,6 +99,10 @@ jobs:
 
       - name: Download latest Pyodide
         run: |
+          which python
+
+          python -m pip install https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
+
           wget http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/pyodide-core.tar.bz2
           tar -xvf pyodide-core.tar.bz2
           mv pyodide dist
