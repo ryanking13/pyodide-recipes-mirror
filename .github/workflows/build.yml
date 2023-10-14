@@ -57,16 +57,12 @@ jobs:
         shell: bash -l {0}
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
-          # FIXME: move to pyodide-build
-          export PKG_CONFIG_PATH=$(pwd)/packages/.libs/lib/pkgconfig
           pyodide build-recipes "*" --install --install-dir=./repodata
 
       - name: Build recipes (changed only)
         shell: bash -l {0}
         if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
         run: |
-          # FIXME: move to pyodide-build
-          export PKG_CONFIG_PATH=$(pwd)/packages/.libs/lib/pkgconfig
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
 
       - name: Store artifacts build
