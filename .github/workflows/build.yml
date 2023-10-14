@@ -21,12 +21,12 @@ jobs:
         run : |
           pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pip install setuptools --upgrade
-          
+
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
-          
+
           sudo apt update
           sudo apt install gfortran f2c
-          
+
       - name: Check emscripten version
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
@@ -34,10 +34,31 @@ jobs:
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
 
-      - name: Build recipes
+      - name: Calculate recipes to build (pull_request)
+        if: github.event_name == 'pull_request'
+        id: calculate_recipes_pr
+        run: |
+          CHANGED_RECIPES=$(python ./tools/calc_diff.py \
+            --base ${{ github.base_ref }} \
+            --target ${{ github.head_ref }})
+
+          # If there are no changed recipes, we build only core packages sets
+          if [ -z "$CHANGED_RECIPES" ]; then
+            echo "recipes=tag:core" >> "$GITHUB_OUTPUT"
+          else
+            echo "recipes=$CHANGED_RECIPES,tag:core" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build recipes (full)
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
           export PKG_CONFIG_PATH=$(pwd)/packages/.libs/lib/pkgconfig  # FIXME: move to pyodide-build
           pyodide build-recipes "*" --install --install-dir=./repodata
+
+      - name: Build recipes (changed only)
+        if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
+        run: |
+          pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
@@ -45,7 +66,7 @@ jobs:
           name: repodata
           path: ./repodata/
           retention-days: 15
-      
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
