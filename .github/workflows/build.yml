@@ -24,7 +24,7 @@ jobs:
       - name: Install latest pyodide-build and build dependencies
         run : |
           which python
-          python -m pip install https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
+          python -m pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
 
       - name: Check emscripten version
