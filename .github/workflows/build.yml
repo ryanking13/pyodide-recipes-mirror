@@ -21,12 +21,12 @@ jobs:
         run : |
           pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pip install setuptools --upgrade
-          
+
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
-          
+
           sudo apt update
           sudo apt install gfortran f2c
-          
+
       - name: Check emscripten version
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
@@ -44,7 +44,7 @@ jobs:
           name: repodata
           path: ./repodata/
           retention-days: 15
-      
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
