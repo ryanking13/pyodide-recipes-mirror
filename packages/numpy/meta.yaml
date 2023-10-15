@@ -1,13 +1,13 @@
 package:
   name: numpy
-  version: 1.24.2
+  version: 1.25.2
   tag:
     - min-scipy-stack
   top-level:
     - numpy
 source:
-  url: https://files.pythonhosted.org/packages/e4/a9/6704bb5e1d1d778d3a6ee1278a8d8134f0db160e09d52863a24edb58eab5/numpy-1.24.2.tar.gz
-  sha256: 003a9f530e880cb2cd177cba1af7220b9aa42def9c4afc2a2fc3ee6be7eb2b22
+  url: https://files.pythonhosted.org/packages/a0/41/8f53eff8e969dd8576ddfb45e7ed315407d27c7518ae49418be8ed532b07/numpy-1.25.2.tar.gz
+  sha256: fd608e19c8d7c55021dffd43bfe5492fab8cc105cc8986f813f8c3c048b38760
 
 build:
   backend-flags: --disable-optimization
@@ -19,7 +19,6 @@ build:
     - numpy/core/include/numpy/_numpyconfig.h
     - numpy/core/lib/libnpymath.a
     - numpy/random/lib/libnpyrandom.a
-  unvendor-tests: false
 about:
   home: https://www.numpy.org
   PyPI: https://pypi.org/project/numpy
