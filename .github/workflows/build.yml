@@ -47,8 +47,8 @@ jobs:
         shell: bash -l {0}
         run: |
           export CHANGED_RECIPES=$(python ./tools/calc_diff.py \
-            --base origin/${{ github.base_ref }} \
-            --target ${{ github.head_ref }})
+            --base origin/${{ github.event.pull_request.base.ref }} \
+            --target ${{ github.sha }})
 
           echo "Changed recipes: $CHANGED_RECIPES"
 
