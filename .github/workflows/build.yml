@@ -12,6 +12,9 @@ permissions:
 env:
   # Increase this value to reset cache if environment.yml has not changed
   CONDA_CACHE_NUMBER: 0
+  # Increase this value to reset cache if emscripten_version has not changed
+  EMSDK_CACHE_FOLDER: 'emsdk-cache'
+  EMSDK_CACHE_NUMBER: 0
 
 jobs:
   build:
@@ -44,10 +47,17 @@ jobs:
         shell: bash -l {0}
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
+      
+      - name: Cache emsdk
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EMSDK_CACHE_FOLDER}}
+          key: ${{env.EMSCRIPTEN_VERSION}}-${{ runner.os }}
 
       - uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
