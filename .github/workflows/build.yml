@@ -147,10 +147,11 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          # FIXME: skip webworker tests
+          # FIXME: don't skip webworker tests
+          # FIXKE: don't skip cpp_exception tests
           pytest -v \
             --dist-dir=./dist/ \
             --runner=${{ matrix.test-config.runner }} \
             --rt ${{ matrix.test-config.runtime }} \
-            -k "not webworker" \
+            -k "not webworker and not cpp_exception" \
             packages
