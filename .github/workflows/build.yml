@@ -9,11 +9,23 @@ on:
 permissions:
   contents: write
 
+env:
+  # Increase this value to reset cache if environment.yml has not changed
+  CONDA_CACHE_NUMBER: 0
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Cache conda
+        uses: actions/cache@v2
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
+            hashFiles('environment.yml') }}
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -94,6 +106,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Cache conda
+        uses: actions/cache@v2
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
+            hashFiles('environment.yml') }}
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
