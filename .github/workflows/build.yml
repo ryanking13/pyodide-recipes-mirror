@@ -2,6 +2,8 @@ name: Build Recipes
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -12,6 +14,9 @@ permissions:
 env:
   # Increase this value to reset cache if environment.yml has not changed
   CONDA_CACHE_NUMBER: 0
+  # Increase this value to reset cache if emscripten_version has not changed
+  EMSDK_CACHE_FOLDER: 'emsdk-cache'
+  EMSDK_CACHE_NUMBER: 0
 
 jobs:
   build:
@@ -32,6 +37,7 @@ jobs:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Install latest pyodide-build and build dependencies
         shell: bash -l {0}
@@ -44,10 +50,17 @@ jobs:
         shell: bash -l {0}
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
+      
+      - name: Cache emsdk
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EMSDK_CACHE_FOLDER}}
+          key: ${{env.EMSDK_CACHE_NUMBER}}-${{env.EMSCRIPTEN_VERSION}}-${{ runner.os }}
 
       - uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
@@ -120,6 +133,7 @@ jobs:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Download latest Pyodide
         shell: bash -l {0}
