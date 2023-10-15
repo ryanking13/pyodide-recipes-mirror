@@ -1,0 +1,14 @@
+package:
+  name: pydecimal
+  version: 1.0.0 # Nonsense
+  tag:
+    - always
+  top-level:
+    - _pydecimal
+source:
+  sha256: $(PYTHON_ARCHIVE_SHA256)
+  url: $(PYTHON_ARCHIVE_URL)
+build:
+  type: cpython_module
+  script: |
+    cp Lib/_pydecimal.py $DISTDIR
