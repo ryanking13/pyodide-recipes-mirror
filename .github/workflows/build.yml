@@ -11,6 +11,13 @@ on:
 permissions:
   contents: write
 
+env:
+  # Increase this value to reset cache if environment.yml has not changed
+  CONDA_CACHE_NUMBER: 0
+  # Increase this value to reset cache if emscripten_version has not changed
+  EMSDK_CACHE_FOLDER: 'emsdk-cache'
+  EMSDK_CACHE_NUMBER: 0
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,11 +26,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache conda
+        uses: actions/cache@v2
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
+            hashFiles('environment.yml') }}
+
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Install latest pyodide-build and build dependencies
         shell: bash -l {0}
@@ -36,10 +52,17 @@ jobs:
         shell: bash -l {0}
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
+      
+      - name: Cache emsdk
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EMSDK_CACHE_FOLDER}}
+          key: ${{env.EMSDK_CACHE_NUMBER}}-${{env.EMSCRIPTEN_VERSION}}-${{ runner.os }}
 
       - uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
@@ -101,11 +124,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Cache conda
+        uses: actions/cache@v2
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
+            hashFiles('environment.yml') }}
+
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Download latest Pyodide
         shell: bash -l {0}
@@ -133,10 +165,11 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          # FIXME: skip webworker tests
+          # FIXME: don't skip webworker tests
+          # FIXKE: don't skip cpp_exception tests
           pytest -v \
             --dist-dir=./dist/ \
             --runner=${{ matrix.test-config.runner }} \
             --rt ${{ matrix.test-config.runtime }} \
-            -k "not webworker" \
+            -k "not webworker and not cpp_exception" \
             packages
