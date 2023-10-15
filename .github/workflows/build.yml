@@ -37,6 +37,7 @@ jobs:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Install latest pyodide-build and build dependencies
         shell: bash -l {0}
@@ -132,6 +133,7 @@ jobs:
           activate-environment: pyodide-env
           environment-file: environment.yml
           channels: conda-forge
+          use-only-tar-bz2: true
 
       - name: Download latest Pyodide
         shell: bash -l {0}
