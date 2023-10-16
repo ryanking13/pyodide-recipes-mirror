@@ -1,0 +1,20 @@
+package:
+  name: cffi
+  version: 1.15.1
+  top-level:
+    - cffi
+requirements:
+  run:
+    - pycparser
+source:
+  url: https://files.pythonhosted.org/packages/2b/a8/050ab4f0c3d4c1b8aaa805f70e26e84d0e27004907c5b8ecc1d31815f92a/cffi-1.15.1.tar.gz
+  sha256: d400bfb9a37b1351253cb402671cea7e89bdecc294e8016a707f6d1d8ac934f9
+  patches:
+    - patches/libffi-config.patch
+build:
+  cross-build-env: true
+about:
+  home: http://cffi.readthedocs.org
+  PyPI: https://pypi.org/project/cffi
+  summary: Foreign Function Interface for Python calling C code.
+  license: MIT

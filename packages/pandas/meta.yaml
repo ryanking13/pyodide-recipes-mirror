@@ -1,0 +1,27 @@
+package:
+  name: pandas
+  version: 1.5.3
+  tag:
+    - min-scipy-stack
+  top-level:
+    - pandas
+source:
+  url: https://files.pythonhosted.org/packages/74/ee/146cab1ff6d575b54ace8a6a5994048380dc94879b0125b25e62edcb9e52/pandas-1.5.3.tar.gz
+  sha256: 74a3fd7e5a7ec052f183273dc7b0acd3a863edf7520f5d3a1765c04ffdb3b0b1
+build:
+  cflags:
+    -Werror=implicit-function-declaration -Werror=mismatched-parameter-types
+    -Werror=mismatched-return-types -Oz
+  ldflags: --Wl,--fatal-warnings -Oz
+requirements:
+  host:
+    - numpy
+  run:
+    - numpy
+    - python-dateutil
+    - pytz
+about:
+  home: https://pandas.pydata.org
+  PyPI: https://pypi.org/project/pandas
+  summary: Powerful data structures for data analysis, time series, and statistics
+  license: BSD-3-Clause
