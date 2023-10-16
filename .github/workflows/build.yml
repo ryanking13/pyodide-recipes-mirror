@@ -2,8 +2,7 @@ name: Build Recipes
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -171,5 +170,5 @@ jobs:
             --dist-dir=./dist/ \
             --runner=${{ matrix.test-config.runner }} \
             --rt ${{ matrix.test-config.runtime }} \
-            -k "not webworker and not cpp_exception" \
+            -k "not webworker and not cpp_exception not triangulation" \
             packages

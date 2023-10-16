@@ -1,0 +1,18 @@
+package:
+  name: bleach
+  version: 6.0.0
+  top-level:
+    - bleach
+requirements:
+  run:
+    - webencodings
+    - packaging
+    - six
+source:
+  sha256: 33c16e3353dbd13028ab4799a0f89a83f113405c766e9c122df8a06f5b85b3f4
+  url: https://files.pythonhosted.org/packages/ac/e2/dfcab68c9b2e7800c8f06b85c76e5f978d05b195a958daa9b1dda54a1db6/bleach-6.0.0-py3-none-any.whl
+about:
+  home: https://github.com/mozilla/bleach
+  PyPI: https://pypi.org/project/bleach
+  summary: An easy safelist-based HTML-sanitizing tool.
+  license: Apache Software License
