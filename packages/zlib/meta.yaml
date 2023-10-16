@@ -1,0 +1,25 @@
+package:
+  name: zlib
+  version: 1.3.0
+  tag:
+    - library
+source:
+  sha256: ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e
+  url: https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz
+
+build:
+  type: static_library
+  script: |
+    mkdir -p "build"
+    pushd "build"
+    LDFLAGS="${SIDE_MODULE_LDFLAGS}" emcmake cmake \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_BENCHMARKS=OFF \
+      -DBUILD_DOCUMENTATION=OFF \
+      -DCMAKE_C_FLAGS="-fPIC -Wno-deprecated-non-prototype" \
+      -DCMAKE_CXX_FLAGS="-fPIC -Wno-deprecated-non-prototype" \
+      -DCMAKE_INSTALL_PREFIX=${WASM_LIBRARY_DIR} \
+      ../
+    emmake make -j ${PYODIDE_JOBS:-3}
+    emmake make install
+    popd
