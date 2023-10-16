@@ -18,6 +18,7 @@ dependencies:
   - wget
   - setuptools
   - gfortran
+  - rust
   - pip:
     - pytest
     - pytest-pyodide
