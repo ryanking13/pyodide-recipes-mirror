@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache conda
         uses: actions/cache@v2
@@ -67,8 +69,10 @@ jobs:
         shell: bash -l {0}
         run: |
           export CHANGED_RECIPES=$(python ./tools/calc_diff.py \
-            --base origin/${{ github.base_ref }} \
-            --target ${{ github.head_ref }})
+            --base origin/${{ github.event.pull_request.base.ref }} \
+            --target ${{ github.sha }})
+
+          echo "Changed recipes: $CHANGED_RECIPES"
 
           # If there are no changed recipes, we build only core packages sets
           if [ -z "$CHANGED_RECIPES" ]; then

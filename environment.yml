@@ -17,6 +17,7 @@ dependencies:
   - libtool
   - wget
   - setuptools
+  - gfortran
   - pip:
     - pytest
     - pytest-pyodide

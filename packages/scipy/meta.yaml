@@ -1,0 +1,155 @@
+package:
+  name: scipy
+  version: 1.11.2
+  tag:
+    - min-scipy-stack
+  top-level:
+    - scipy
+
+# See extra explanation in info.md
+#
+# For future reference: if you see the following errors:
+#   Declaration error: adjustable dimension on non-argument
+# or:
+#   nonconstant array size
+# you are trying to compile code that isn't written to the fortran 77 standard.
+# The line number in the error points to the last line of the problematic
+# subroutine. Try deleting it.
+
+source:
+  url: https://files.pythonhosted.org/packages/9c/ef/87a5565907645998d7c62e76b84b0ca9f0b7c25cd433f5617a968051cec3/scipy-1.11.2.tar.gz
+  sha256: b29318a5e39bd200ca4381d80b065cdf3076c7d7281c5e36569e99273867f61d
+
+  patches:
+    - patches/0001-Fix-dstevr-in-special-lapack_defs.h.patch
+    - patches/0002-int-to-string.patch
+    - patches/0003-fix-fotran-files-minpack.patch
+    - patches/0004-gemm_-no-const.patch
+    - patches/0005-make-int-return-values.patch
+    - patches/0006-Rename-_page_trend_test.py-to-prevent-test-unvendori.patch
+    - patches/0007-skip-fortran-fails-to-link.patch
+    - patches/0008-Remove-meson-requirements.patch
+    - patches/0009-Fix-fitpack.patch
+    - patches/0010-Fix-gees-calls.patch
+
+build:
+  cflags: |
+    -I$(WASM_LIBRARY_DIR)/include
+    -Wno-return-type
+    -DUNDERSCORE_G77
+  cxxflags: -fexceptions
+  ldflags: |
+    -L$(NUMPY_LIB)/core/lib/
+    -L$(NUMPY_LIB)/random/lib/
+    -fexceptions
+  # IMPORTANT: Other locations important in scipy build process:
+  # There are two files built in the "capture" pass that need patching:
+  #    _blas_subroutines.h, and _cython
+  # Scipy has a bunch of custom logic implemented in
+  # pyodide-build/pyodide_build/_f2c_fixes.py.
+  script: |
+    set -x
+    export PKG_CONFIG_LIBDIR=$WASM_PKG_CONFIG_PATH
+    export NPY_BLAS_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
+    export NPY_LAPACK_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
+
+    # setup.py has been renamed to _setup.py in scipy 1.11.2 to discourage its
+    # usage but we still need it until we manage to build with meson
+    mv _setup.py setup.py
+
+    sed -i 's/recursive //g' scipy/integrate/quadpack/* scipy/interpolate/fitpack/*
+    sed -i 's/void DQA/int DQA/g' scipy/integrate/__quadpack.h
+
+    # Change many functions that return void into functions that return int
+    find scipy -name "*.c*" -type f | xargs sed -i 's/extern void F_FUNC/extern int F_FUNC/g'
+
+    sed -i 's/void F_FUNC/int F_FUNC/g' scipy/odr/__odrpack.c
+    sed -i 's/^void/int/g' scipy/odr/odrpack.h
+    sed -i 's/^void/int/g' scipy/odr/__odrpack.c
+
+    sed -i 's/void BLAS_FUNC/int BLAS_FUNC/g' scipy/special/lapack_defs.h
+    # sed -i 's/void F_FUNC/int F_FUNC/g' scipy/linalg/_lapack_subroutines.h
+    sed -i 's/extern void/extern int/g' scipy/optimize/__minpack.h
+    sed -i 's/void/int/g' scipy/linalg/cython_blas_signatures.txt
+    sed -i 's/^void/int/g' scipy/interpolate/src/_fitpackmodule.c
+
+    sed -i 's/extern void/extern int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
+    sed -i 's/PUBLIC void/PUBLIC int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
+    sed -i 's/^void/int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
+    sed -i 's/^void/int/g' scipy/sparse/linalg/_dsolve/*.{c,h}
+    sed -i 's/void \(.\)print/int \1/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
+    sed -i 's/TYPE_GENERIC_FUNC(\(.*\), void)/TYPE_GENERIC_FUNC(\1, int)/g' scipy/sparse/linalg/_dsolve/_superluobject.h
+
+    sed -i 's/^void/int/g' scipy/optimize/_trlib/trlib_private.h
+    sed -i 's/^void/int/g' scipy/optimize/_trlib/trlib/trlib_private.h
+    sed -i 's/, int)/)/g' scipy/optimize/_trlib/trlib_private.h
+    sed -i 's/, 1)/)/g' scipy/optimize/_trlib/trlib_private.h
+
+    sed -i 's/^void/int/g' scipy/spatial/qhull_misc.h
+    sed -i 's/, size_t)/)/g' scipy/spatial/qhull_misc.h
+    sed -i 's/,1)/)/g' scipy/spatial/qhull_misc.h
+
+    # Input error causes "duplicate symbol" linker errors. Empty out the file.
+    echo "" > scipy/sparse/linalg/_dsolve/SuperLU/SRC/input_error.c
+
+  cross-build-env: true
+  cross-build-files:
+    - scipy/linalg/cython_lapack.pxd
+    - scipy/linalg/cython_blas.pxd
+
+requirements:
+  host:
+    - numpy
+    - openblas
+    - boost-cpp
+  run:
+    - numpy
+    - openblas
+  executable:
+    - gfortran
+    - f2c
+
+test:
+  imports:
+    - scipy
+    - scipy.cluster
+    - scipy.cluster.vq
+    - scipy.cluster.hierarchy
+    - scipy.constants
+    - scipy.fft
+    - scipy.fftpack
+    - scipy.integrate
+    - scipy.interpolate
+    - scipy.io
+    - scipy.io.arff
+    - scipy.io.matlab
+    - scipy.io.wavfile
+    - scipy.linalg
+    - scipy.linalg.blas
+    - scipy.linalg.cython_blas
+    - scipy.linalg.lapack
+    - scipy.linalg.cython_lapack
+    - scipy.linalg.interpolative
+    - scipy.misc
+    - scipy.ndimage
+    - scipy.odr
+    - scipy.optimize
+    - scipy.signal
+    - scipy.signal.windows
+    - scipy.sparse
+    - scipy.sparse.linalg
+    - scipy.sparse.csgraph
+    - scipy.spatial
+    - scipy.spatial.distance
+    - scipy.spatial.transform
+    - scipy.special
+    - scipy.stats
+    - scipy.stats.contingency
+    - scipy.stats.distributions
+    - scipy.stats.mstats
+    - scipy.stats.qmc
+about:
+  home: https://www.scipy.org
+  PyPI: https://pypi.org/project/scipy
+  summary: "SciPy: Scientific Library for Python"
+  license: BSD
