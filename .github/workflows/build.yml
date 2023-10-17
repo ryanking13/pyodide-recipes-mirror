@@ -19,39 +19,11 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Check emscripten version
-        shell: bash -l {0}
-        run: |
-          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
-      
-      - name: Cache emsdk
-        uses: actions/cache@v2
-        with:
-          path: ${{env.EMSDK_CACHE_FOLDER}}
-          key: ${{env.EMSDK_CACHE_NUMBER}}-${{env.EMSCRIPTEN_VERSION}}-${{ runner.os }}
-
-      - uses: mymindstorm/setup-emsdk@v11
-        with:
-          version: ${{ env.EMSCRIPTEN_VERSION }}
-          actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
-
-      # Installing ccache inside conda env is not working:
-      # so this job needs to be run before activating the conda env
-      # https://stackoverflow.com/questions/71340058/conda-does-not-look-for-libpthread-and-libpthread-nonshared-at-the-right-place-w
-      - name: Install Emscripten ccache
-        shell: bash -l {0}
-        run: |
-          emsdk install ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
-          # activate again to make sure ccache is in the path
-          emsdk activate ${{env.EMSCRIPTEN_VERSION}}
-          which ccache
-          echo "_EMCC_CACHE: ${_EMCC_CACHE}"
 
       - name: Cache conda
         uses: actions/cache@v2
@@ -75,6 +47,30 @@ jobs:
           python -m pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
 
+      - name: Check emscripten version
+        shell: bash -l {0}
+        run: |
+          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
+      
+      - name: Cache emsdk
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EMSDK_CACHE_FOLDER}}
+          key: ${{env.EMSDK_CACHE_NUMBER}}-${{env.EMSCRIPTEN_VERSION}}-${{ runner.os }}
+
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
+
+      - name: Install Emscripten ccache
+        shell: bash -l {0}
+        run: |
+          emsdk install ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
+          # activate again to make sure ccache is in the path
+          emsdk activate ${{env.EMSCRIPTEN_VERSION}}
+          which ccache
+          echo "_EMCC_CACHE: ${_EMCC_CACHE}"
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
