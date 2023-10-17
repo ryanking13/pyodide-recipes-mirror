@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -63,14 +63,20 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
           actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
+      # FIXME: Installing ccache inside the conda environment does not work
+      # https://stackoverflow.com/questions/71340058/conda-does-not-look-for-libpthread-and-libpthread-nonshared-at-the-right-place-w
       - name: Install Emscripten ccache
         shell: bash -l {0}
         run: |
+          conda deactivate
+          
           emsdk install ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
           # activate again to make sure ccache is in the path
           emsdk activate ${{env.EMSCRIPTEN_VERSION}}
           which ccache
           echo "_EMCC_CACHE: ${_EMCC_CACHE}"
+
+          conda activate pyodide-env
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
