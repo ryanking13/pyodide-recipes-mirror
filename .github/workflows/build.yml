@@ -63,6 +63,11 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
           actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
+      - name: Install Emscripten ccache
+        shell: bash -l {0}
+        run: |
+          emsdk install --build=Release ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
+
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
         id: calculate_recipes_pr
