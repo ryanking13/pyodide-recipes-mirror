@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -66,7 +66,11 @@ jobs:
       - name: Install Emscripten ccache
         shell: bash -l {0}
         run: |
-          emsdk install --build=Release ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
+          emsdk install ${{env.EMSCRIPTEN_VERSION}} ccache-git-emscripten-64bit
+          # activate again to make sure ccache is in the path
+          emsdk activate ${{env.EMSCRIPTEN_VERSION}}
+          which ccache
+          echo "_EMCC_CACHE: ${_EMCC_CACHE}"
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
