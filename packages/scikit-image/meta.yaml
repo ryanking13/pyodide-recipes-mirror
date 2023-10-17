@@ -14,8 +14,7 @@ build:
   script: |
     export CFLAGS=${SIDE_MODULE_CFLAGS}
     export LDFLAGS=${SIDE_MODULE_LDFLAGS}
-  backend-flags: setup-args=--cross-file=$PYODIDE_ROOT/tools/emscripten.meson.cross
-
+  backend-flags: setup-args=--cross-file=$PKGDIR/extras/emscripten.meson.cross
 requirements:
   host:
     - numpy
