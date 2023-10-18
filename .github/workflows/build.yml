@@ -27,6 +27,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Emscripten ccache
+        shell: bash -l {0}
+        run: |
+
+          # FIXME: Installing ccache using `emsdk install ccache-git-emscripten-64bit` doesn't work well in conda env:
+          # https://stackoverflow.com/questions/71340058/conda-does-not-look-for-libpthread-and-libpthread-nonshared-at-the-right-place-w
+          git clone https://github.com/juj/ccache -b emscripten --depth 1
+          cd ccache
+          cmake .
+          make ccache
+          export PATH=$(pwd):$PATH
+          export _EMCC_CACHE=1
+          cd ..
+
+          which ccache
+
       - name: Cache conda
         uses: actions/cache@v2
         with:
@@ -70,23 +86,6 @@ jobs:
         with:
           path: ${{env.CCACHE_DIR}}
           key: ${{env.CCACHE_DIR}}-${{env.CCACHE_CACHE_NUMBER}}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
-
-      - name: Install Emscripten ccache
-        shell: bash -l {0}
-        run: |
-
-          # FIXME: Installing ccache using `emsdk install ccache-git-emscripten-64bit` doesn't work well in conda env:
-          # https://stackoverflow.com/questions/71340058/conda-does-not-look-for-libpthread-and-libpthread-nonshared-at-the-right-place-w
-
-          git clone https://github.com/juj/ccache -b emscripten --depth 1
-          cd ccache
-          cmake .
-          make ccache
-          export PATH=$(pwd):$PATH
-          export _EMCC_CACHE=1
-          cd ..
-
-          which ccache
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
