@@ -38,7 +38,6 @@ jobs:
           cmake .
           make ccache
           export PATH=$(pwd):$PATH
-          export _EMCC_CACHE=1
           cd ..
 
           which ccache
@@ -84,8 +83,8 @@ jobs:
       - name: Cache ccache
         uses: actions/cache@v2
         with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{env.CCACHE_DIR}}-${{env.CCACHE_CACHE_NUMBER}}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
@@ -110,6 +109,8 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
           ccache -z
+          export _EMCC_CACHE=1
+
           pyodide build-recipes "*" --install --install-dir=./repodata
           ccache -s
 
@@ -117,7 +118,11 @@ jobs:
         shell: bash -l {0}
         if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
         run: |
+          ccache -z
+          export _EMCC_CACHE=1
+          
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
+          ccache -s
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
