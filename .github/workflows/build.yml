@@ -16,6 +16,8 @@ env:
   # Increase this value to reset cache if emscripten_version has not changed
   EMSDK_CACHE_FOLDER: 'emsdk-cache'
   EMSDK_CACHE_NUMBER: 0
+  CCACHE_DIR: /tmp/.ccache
+  CCACHE_CACHE_NUMBER: 0
 
 jobs:
   build:
@@ -24,6 +26,21 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Install Emscripten ccache
+        shell: bash -l {0}
+        run: |
+
+          # FIXME: Installing ccache using `emsdk install ccache-git-emscripten-64bit` doesn't work well in conda env:
+          # https://stackoverflow.com/questions/71340058/conda-does-not-look-for-libpthread-and-libpthread-nonshared-at-the-right-place-w
+          git clone https://github.com/juj/ccache -b emscripten --depth 1
+          cd ccache
+          cmake .
+          make ccache
+          export PATH=$(pwd):$PATH
+          cd ..
+
+          which ccache
 
       - name: Cache conda
         uses: actions/cache@v2
@@ -63,6 +80,24 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
           actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
+      - name: Set ccache suffix
+        shell: bash -l {0}
+        run: |
+          # This step makes the cache key in the main branch and PRs different.
+          # main branch run a full build, while PRs run a partial build
+          # so we keep the ccache cache separate
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo CCACHE_SUFFIX="-pr" >> $GITHUB_ENV
+          fi
+
+      - name: Cache ccache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}${{ env.CCACHE_SUFFIX }}
+          restore-keys: |
+            ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
+
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
         id: calculate_recipes_pr
@@ -85,14 +120,23 @@ jobs:
         shell: bash -l {0}
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
+          ccache -z
+          export _EMCC_CACHE=1
+
+          export PIP_CONSTRAINT=$(pwd)/tools/constraints.txt
           pyodide build-recipes "*" --install --install-dir=./repodata
+          ccache -s
 
       - name: Build recipes (changed only)
         shell: bash -l {0}
         if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, '[full build]')
         run: |
+          ccache -z
+          export _EMCC_CACHE=1
+          
           export PIP_CONSTRAINT=$(pwd)/tools/constraints.txt
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
+          ccache -s
 
       - name: Store artifacts build
         uses: actions/upload-artifact@v2
