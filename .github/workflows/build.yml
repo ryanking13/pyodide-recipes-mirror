@@ -111,6 +111,7 @@ jobs:
           ccache -z
           export _EMCC_CACHE=1
 
+          export PIP_CONSTRAINT=$(pwd)/tools/constraints.txt
           pyodide build-recipes "*" --install --install-dir=./repodata
           ccache -s
 
@@ -121,6 +122,7 @@ jobs:
           ccache -z
           export _EMCC_CACHE=1
           
+          export PIP_CONSTRAINT=$(pwd)/tools/constraints.txt
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
           ccache -s
 
