@@ -80,11 +80,23 @@ jobs:
           version: ${{ env.EMSCRIPTEN_VERSION }}
           actions-cache-folder: ${{env.EMSDK_CACHE_FOLDER}}
 
+      - name: Set ccache suffix
+        shell: bash -l {0}
+        run: |
+          # This step makes the cache key in the main branch and PRs different.
+          # main branch run a full build, while PRs run a partial build
+          # so we keep the ccache cache separate
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo CCACHE_SUFFIX="-pr" >> $GITHUB_ENV
+          fi
+
       - name: Cache ccache
         uses: actions/cache@v2
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
+          key: ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}${{ env.CCACHE_SUFFIX }}
+          restore-keys: |
+            ${{ env.CCACHE_DIR }}-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ runner.os }}
 
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
