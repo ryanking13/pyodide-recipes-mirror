@@ -1,0 +1,16 @@
+package:
+  name: coverage
+  version: 7.3.0
+  top-level:
+    - coverage
+source:
+  url: https://files.pythonhosted.org/packages/4e/87/c0163d39ac70cab62ebcaee164c988215cd312919a78940c2251a2fcfabb/coverage-7.3.0.tar.gz
+  sha256: 49dbb19cdcafc130f597d9e04a29d0a032ceedf729e41b181f51cd170e6ee865
+requirements:
+  run:
+    - sqlite3
+about:
+  home: https://github.com/nedbat/coveragepy
+  PyPI: https://pypi.org/project/coverage
+  summary: Code coverage measurement for Python
+  license: Apache 2.0
