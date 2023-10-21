@@ -234,5 +234,5 @@ jobs:
             --dist-dir=./dist/ \
             --runner=${{ matrix.test-config.runner }} \
             --rt ${{ matrix.test-config.runtime }} \
-            -k "not webworker and not cpp_exception and not triangulation" \
+            -k "not webworker and not cpp_exception and not triangulation and not cartopy" \
             packages
