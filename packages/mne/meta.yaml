@@ -1,0 +1,20 @@
+package:
+  name: mne
+  version: 1.5.0
+  top-level:
+    - mne
+source:
+  sha256: 6227a8bd6ac84311a3cd2e017a22f754a3e0b9bec630ce02e78791d650395012
+  url: https://files.pythonhosted.org/packages/2e/80/980597b020ec2526c22f510ddc7ad595f13d0fd9f27b5aa75c4841c1fb62/mne-1.5.0-py3-none-any.whl
+requirements:
+  run:
+    - distutils
+    - numpy
+    - scipy
+    - setuptools
+    - decorator
+about:
+  home: https://mne.tools/dev/
+  PyPI: https://pypi.org/project/mne
+  summary: MNE-Python project for MEG and EEG data analysis.
+  license: BSD-3-Clause

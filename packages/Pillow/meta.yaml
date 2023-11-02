@@ -36,6 +36,7 @@ requirements:
   host:
     - libwebp
     - libtiff
+    - zlib
 about:
   home: https://python-pillow.org
   PyPI: https://pypi.org/project/Pillow
