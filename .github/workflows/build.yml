@@ -83,13 +83,6 @@ jobs:
           python -m pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
           pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
 
-          # FIXME: remove this
-          export RUST_TOOLCHAIN=nightly-2023-04-29
-          rustup toolchain install ${RUST_TOOLCHAIN} && rustup default ${RUST_TOOLCHAIN}
-          rustup target add wasm32-unknown-emscripten --toolchain ${RUST_TOOLCHAIN}
-
-
-
       - name: Check emscripten version
         shell: bash -l {0}
         run: |
