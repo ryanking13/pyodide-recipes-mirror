@@ -28,20 +28,5 @@ repos:
     hooks:
       - id: black
 
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: "v1.5.1"
-  #   hooks:
-  #     - id: mypy
-  #       args: []
-  #       additional_dependencies: &mypy-deps
-  #         - pytest
-
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.6"
-    hooks:
-      - id: codespell
-        args: ["-L", "te,slowy,aray,ba,nd,classs,crate,feld,lits"]
-
 ci:
   autoupdate_schedule: "quarterly"
