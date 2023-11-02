@@ -87,7 +87,7 @@ jobs:
         shell: bash -l {0}
         run: |
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
-      
+
       - name: Cache emsdk
         uses: actions/cache@v2
         with:
@@ -152,7 +152,7 @@ jobs:
         run: |
           ccache -z
           export _EMCC_CACHE=1
-          
+
           export PIP_CONSTRAINT=$(pwd)/tools/constraints.txt
           pyodide build-recipes ${{ steps.calculate_recipes_pr.outputs.recipes }} --install --install-dir=./repodata
           ccache -s
