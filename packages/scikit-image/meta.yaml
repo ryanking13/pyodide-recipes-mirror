@@ -1,0 +1,35 @@
+package:
+  name: scikit-image
+  version: 0.21.0
+  top-level:
+    - skimage
+      # - doc  # scikit-image has top level `doc` directory... but it is too common name so we don't want to use it as a hint for top-level import.
+source:
+  patches:
+    - patches/make-tifffile-optional.patch
+  sha256: b33e823c54e6f11873ea390ee49ef832b82b9f70752c8759efd09d5a4e3d87f0
+  url: https://files.pythonhosted.org/packages/1d/c2/a54d5e6e2d6708e0722a1aaccef4b7cc1e6df6f76c8b4ce98cd6d0c332c3/scikit_image-0.21.0.tar.gz
+
+build:
+  script: |
+    export CFLAGS=${SIDE_MODULE_CFLAGS}
+    export LDFLAGS=${SIDE_MODULE_LDFLAGS}
+
+requirements:
+  host:
+    - numpy
+  run:
+    - packaging
+    - numpy
+    - scipy
+    - networkx
+    - Pillow
+    - imageio
+    - pywavelets
+    - lazy_loader
+
+about:
+  home: https://scikit-image.org
+  PyPI: https://pypi.org/project/scikit-image
+  summary: Image processing in Python
+  license: Modified BSD
