@@ -42,52 +42,39 @@ jobs:
 
           which ccache
 
-      # - name: Cache conda
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/conda_pkgs_dir
-      #     key:
-      #       ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
-      #       hashFiles('environment.yml') }}
-
-      # - name: Setup Mambaforge
-      #   uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     miniforge-variant: Mambaforge
-      #     miniforge-version: latest
-      #     activate-environment: pyodide-env
-      #     use-mamba: true
-
-      # - name: Get Date
-      #   id: get-date
-      #   run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-      #   shell: bash
-
-      # - name: Cache Conda env
-      #   id: conda-cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ${{ env.CONDA }}/envs
-      #     key:
-      #       conda-${{ runner.os }}-${{ steps.get-date.outputs.today }}-${{ hashFiles('environment.yml') }}-${{ env.CONDA_CACHE_NUMBER }}
-
-      # - name: Update environment if cache miss
-      #   run:
-      #     mamba env update -n pyodide-env -f environment.yml
-      #   if: steps.conda-cache.outputs.cache-hit != 'true'
-
-      - uses: actions/setup-python@v5
+      - name: Cache conda
+        uses: actions/cache@v2
         with:
-          python-version: '3.11'
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
+            hashFiles('environment.yml') }}
 
-      - uses: actions/setup-node@v4
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          node-version: 20
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          activate-environment: pyodide-env
+          use-mamba: true
 
-      - name: Install dependencies
-        shell: bash -l {0}
-        run: |
-          sudo apt-get install ccache f2c swig make cmake texinfo autoconf automake libtool wget gfortran build-essential git xxd
+      - name: Get Date
+        id: get-date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Cache Conda env
+        id: conda-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.CONDA }}/envs
+          key:
+            conda-${{ runner.os }}-${{ steps.get-date.outputs.today }}-${{ hashFiles('environment.yml') }}-${{ env.CONDA_CACHE_NUMBER }}
+
+      - name: Update environment if cache miss
+        run:
+          mamba env update -n pyodide-env -f environment.yml
+        if: steps.conda-cache.outputs.cache-hit != 'true'
 
       - name: Install latest pyodide-build and build dependencies
         shell: bash -l {0}
