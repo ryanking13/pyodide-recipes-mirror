@@ -20,6 +20,8 @@ build:
   script: |
     export PATH=${WASM_LIBRARY_DIR}/bin:${PATH}
 
+    embuilder build zlib --pic
+
     # dap + byterange: no libcurl
 
     emconfigure ./configure \
