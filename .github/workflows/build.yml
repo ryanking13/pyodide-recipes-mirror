@@ -87,7 +87,7 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-          apt install ccache f2c swig make cmake texinfo autoconf automake libtool wget gfortran -y
+          sudo apt-get install ccache f2c swig make cmake texinfo autoconf automake libtool wget gfortran
 
       - name: Install latest pyodide-build and build dependencies
         shell: bash -l {0}
