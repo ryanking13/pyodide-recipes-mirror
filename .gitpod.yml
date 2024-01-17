@@ -1,0 +1,15 @@
+additionalRepositories:
+  - url: https://github.com/emscripten-core/emsdk
+tasks:
+  - name: Setup
+    init: |
+      pyenv shell system
+      conda create -f environment.yml
+      conda activate pyodide-env
+
+      pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
+      pyodide xbuildenv install --download --url http://pyodide-cache.s3-website-us-east-1.amazonaws.com/xbuildenv/dev/xbuildenv.tar.bz2
+
+      EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
+      ../emsdk/emsdk install ${EMSCRIPTEN_VERSION}
+      ../emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
