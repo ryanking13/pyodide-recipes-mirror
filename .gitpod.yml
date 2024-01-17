@@ -3,8 +3,8 @@ additionalRepositories:
 tasks:
   - name: Setup
     init: |
-      pyenv shell system
-      conda create -f environment.yml
+      pyenv global system
+      conda env create -f environment.yml
       conda activate pyodide-env
 
       pip install git+https://github.com/pyodide/pyodide.git@main#subdirectory=pyodide-build
@@ -13,3 +13,5 @@ tasks:
       EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
       ../emsdk/emsdk install ${EMSCRIPTEN_VERSION}
       ../emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
+    command: |
+      source ../emsdk/emsdk_env.sh
