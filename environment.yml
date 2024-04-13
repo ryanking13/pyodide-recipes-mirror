@@ -2,8 +2,8 @@ name: pyodide-env
 channels:
   - conda-forge
 dependencies:
-  - python=3.11
-  - nodejs
+  - python=3.12
+  - nodejs=20
   - ccache
   - f2c
   - swig
@@ -18,5 +18,5 @@ dependencies:
   - gfortran
   - pip:
     - pytest
-    - pytest-pyodide==0.53.1
+    - pytest-pyodide==0.56.2
     - pytest-httpserver
