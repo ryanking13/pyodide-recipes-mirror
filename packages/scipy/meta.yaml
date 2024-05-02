@@ -1,6 +1,6 @@
 package:
   name: scipy
-  version: 1.11.2
+  version: 1.12.0
   tag:
     - min-scipy-stack
   top-level:
@@ -17,8 +17,8 @@ package:
 # subroutine. Try deleting it.
 
 source:
-  url: https://files.pythonhosted.org/packages/9c/ef/87a5565907645998d7c62e76b84b0ca9f0b7c25cd433f5617a968051cec3/scipy-1.11.2.tar.gz
-  sha256: b29318a5e39bd200ca4381d80b065cdf3076c7d7281c5e36569e99273867f61d
+  url: https://files.pythonhosted.org/packages/30/85/cdbf2c3c460fe5aae812917866392068a88d02f07de0fe31ce738734c477/scipy-1.12.0.tar.gz
+  sha256: 4bf5abab8a36d20193c698b0f1fc282c1d083c94723902c447e5d2f1780936a3
 
   patches:
     - patches/0001-Fix-dstevr-in-special-lapack_defs.h.patch
@@ -26,18 +26,19 @@ source:
     - patches/0003-fix-fotran-files-minpack.patch
     - patches/0004-gemm_-no-const.patch
     - patches/0005-make-int-return-values.patch
-    - patches/0006-Rename-_page_trend_test.py-to-prevent-test-unvendori.patch
-    - patches/0007-skip-fortran-fails-to-link.patch
-    - patches/0008-Remove-meson-requirements.patch
-    - patches/0009-Fix-fitpack.patch
-    - patches/0010-Fix-gees-calls.patch
+    - patches/0007-Remove-test-modules-that-fails-to-build.patch
+    - patches/0008-Fix-fitpack.patch
+    - patches/0009-Fix-gees-calls.patch
 
 build:
   cflags: |
     -I$(WASM_LIBRARY_DIR)/include
     -Wno-return-type
     -DUNDERSCORE_G77
-  cxxflags: -fexceptions
+    -fvisibility=default
+  cxxflags: |
+    -fexceptions
+    -fvisibility=default
   ldflags: |
     -L$(NUMPY_LIB)/core/lib/
     -L$(NUMPY_LIB)/random/lib/
@@ -49,13 +50,8 @@ build:
   # pyodide-build/pyodide_build/_f2c_fixes.py.
   script: |
     set -x
-    export PKG_CONFIG_LIBDIR=$WASM_PKG_CONFIG_PATH
     export NPY_BLAS_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
     export NPY_LAPACK_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
-
-    # setup.py has been renamed to _setup.py in scipy 1.11.2 to discourage its
-    # usage but we still need it until we manage to build with meson
-    mv _setup.py setup.py
 
     sed -i 's/recursive //g' scipy/integrate/quadpack/* scipy/interpolate/fitpack/*
     sed -i 's/void DQA/int DQA/g' scipy/integrate/__quadpack.h
@@ -91,6 +87,10 @@ build:
 
     # Input error causes "duplicate symbol" linker errors. Empty out the file.
     echo "" > scipy/sparse/linalg/_dsolve/SuperLU/SRC/input_error.c
+
+  _retain-test-patterns:
+    - "*_page_trend_test.py"
+    - "*bws_test.py"
 
   cross-build-env: true
   cross-build-files:
@@ -153,3 +153,7 @@ about:
   PyPI: https://pypi.org/project/scipy
   summary: "SciPy: Scientific Library for Python"
   license: BSD
+extra:
+  recipe-maintainers:
+    - lesteve
+    - steppi
