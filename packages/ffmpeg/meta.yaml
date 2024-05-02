@@ -18,7 +18,7 @@ build:
       --disable-stripping \
       --disable-programs \
       --disable-pthreads \
-      --nm="$PYODIDE_ROOT/emsdk/emsdk/upstream/bin/llvm-nm -g" \
+      --nm=emnm \
       --ar=emar --cc=emcc --cxx=em++ --objcc=emcc --dep-cc=emcc --ranlib=emranlib \
       --enable-cross-compile \
       --prefix=${WASM_LIBRARY_DIR}
