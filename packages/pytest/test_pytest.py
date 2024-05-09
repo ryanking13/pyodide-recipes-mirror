@@ -1,10 +1,6 @@
-import pytest
-
-
-@pytest.mark.skip()  # TODO: not use numpy and nose in this test
 def test_pytest(selenium):
     # TODO: don't use numpy in this test as it's not necessarily installed.
-    selenium.load_package(["pytest", "numpy", "nose"])
+    selenium.load_package(["pytest", "numpy"])
 
     selenium.run(
         """
