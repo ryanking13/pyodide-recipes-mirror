@@ -228,7 +228,6 @@ jobs:
           activate-environment: pyodide-env
           use-mamba: true
 
-
       - name: Download latest Pyodide
         shell: bash -l {0}
         run: |
@@ -251,6 +250,10 @@ jobs:
       - name: Copy repodata
         run: |
           cp ./repodata/* ./dist/
+      
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-pyodide
 
       - name: Run tests
         shell: bash -l {0}
