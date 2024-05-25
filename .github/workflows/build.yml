@@ -250,7 +250,7 @@ jobs:
       - name: Copy repodata
         run: |
           cp ./repodata/* ./dist/
-      
+
       - name: Install test dependencies
         run: |
           pip install pytest pytest-pyodide
