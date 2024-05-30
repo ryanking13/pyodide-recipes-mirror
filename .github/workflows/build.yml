@@ -162,7 +162,7 @@ jobs:
 
       - name: Build recipes (full)
         shell: bash -l {0}
-        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[full build]') }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || contains(github.event.head_commit.message, '[full build]') }}
         run: |
           ccache -z
           export _EMCC_CACHE=1
