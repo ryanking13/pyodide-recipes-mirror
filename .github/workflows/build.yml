@@ -253,7 +253,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install pytest pytest-pyodide
+          pip install pytest pytest-pyodide pytest-httpserver
 
       - name: Run tests
         shell: bash -l {0}
