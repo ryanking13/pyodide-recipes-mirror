@@ -293,6 +293,7 @@ jobs:
       #     path: ./repodata/
 
       - name: Install anaconda-client
+        shell: bash -el {0}
         run: |
           mamba install -c conda-forge anaconda-client -y
 
