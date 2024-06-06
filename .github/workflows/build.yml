@@ -270,6 +270,9 @@ jobs:
             packages
   release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     # needs: [build]
     # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     environment: deploy
@@ -293,7 +296,6 @@ jobs:
       #     path: ./repodata/
 
       - name: Install anaconda-client
-        shell: bash -el {0}
         run: |
           mamba install -c conda-forge anaconda-client -y
 
