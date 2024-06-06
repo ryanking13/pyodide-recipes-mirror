@@ -270,6 +270,9 @@ jobs:
             packages
   release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     needs: [build]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     environment: deploy
@@ -284,6 +287,7 @@ jobs:
           miniforge-variant: Mambaforge
           miniforge-version: latest
           activate-environment: pyodide-env
+          channels: conda-forge
           use-mamba: true
 
       - name: Download build artifact
@@ -294,7 +298,7 @@ jobs:
 
       - name: Install anaconda-client
         run: |
-          pip install anaconda-client
+          mamba install -c defaults anaconda-client -y
 
       - name: Upload wheels
         run: |
