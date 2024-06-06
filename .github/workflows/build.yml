@@ -287,6 +287,7 @@ jobs:
           miniforge-variant: Mambaforge
           miniforge-version: latest
           activate-environment: pyodide-env
+          channels: conda-forge
           use-mamba: true
 
       # - name: Download build artifact
@@ -297,7 +298,7 @@ jobs:
 
       - name: Install anaconda-client
         run: |
-          mamba install -c conda-forge anaconda-client -y
+          mamba install -c defaults anaconda-client -y
 
       - name: Upload wheels
         run: |
