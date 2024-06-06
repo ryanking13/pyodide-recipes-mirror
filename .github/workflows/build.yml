@@ -294,7 +294,7 @@ jobs:
 
       - name: Install anaconda-client
         run: |
-          conda install -c conda-forge anaconda-client -y
+          pip install anaconda-client
 
       - name: Upload wheels
         run: |
