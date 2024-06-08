@@ -302,4 +302,4 @@ jobs:
 
       - name: Upload wheels
         run: |
-          anaconda -t ${{ secrets.ANACONDA_API_TOKEN }} upload --skip-existing ./repodata/*.whl
+          anaconda -t ${{ secrets.ANACONDA_API_TOKEN }} upload --force ./repodata/*.whl
