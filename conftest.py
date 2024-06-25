@@ -78,3 +78,8 @@ def pytest_collection_modifyitems(config, items):
 
 def package_is_built(package_name):
     return _package_is_built(package_name, pytest.pyodide_dist_dir)
+
+
+requires_jspi = pytest.mark.xfail_browsers(
+    firefox="requires jspi", safari="requires jspi"
+)
