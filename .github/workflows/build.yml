@@ -191,6 +191,10 @@ jobs:
           path: ./repodata/
           retention-days: 15
 
+      - name: Compress build artifacts
+        run: |
+          tar -czvf packages.tar.gz repodata
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -198,7 +202,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            ./repodata/*.whl
+            ./packages.tar.gz
 
   test:
     runs-on: ubuntu-latest
