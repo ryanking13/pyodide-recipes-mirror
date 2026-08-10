@@ -1,3 +1,11 @@
+zfpy uses setuptools for packaging, which tries to automatically detect the
+included Python packages from the folder structure. Since setuptools runs
+directly in the libzfp source, it sees the `src/cuda_zfp`, `src/share`, and
+`src/template` folders and registers them in the top_level.txt file, even
+though those folders are not Python modules at all. By setting the
+`packages` parameter, we explicitly disable automatic discovery, so that only
+the extension module `zfpy` is listed as a top level module.
+
 diff --git a/setup.py b/setup.py
 index 919fa7c..a9e7602 100644
 --- a/setup.py
