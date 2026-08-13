@@ -1,0 +1,47 @@
+From 1c1d223b40b3fc948ef68fde49a6d5876975a712 Mon Sep 17 00:00:00 2001
+From: ryanking13 <def6488@gmail.com>
+Date: Thu, 13 Aug 2026 23:50:00 +0900
+Subject: [PATCH] Fix static pkg-config link flags
+
+The Pyodide recipe installs only the static MariaDB client library. Expose
+its transitive dependencies in the regular Libs field because consumers such
+as mysqlclient do not request pkg-config's static mode. Preserve absolute
+archive paths instead of incorrectly prefixing them with -l.
+---
+ mariadb_config/CMakeLists.txt   | 6 +++++-
+ mariadb_config/libmariadb.pc.in | 4 ++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/mariadb_config/CMakeLists.txt b/mariadb_config/CMakeLists.txt
+index f726c51..a30b539 100644
+--- a/mariadb_config/CMakeLists.txt
++++ b/mariadb_config/CMakeLists.txt
+@@ -14,7 +14,11 @@ FUNCTION(GET_LIB_NAME LIB_NAME LIB_OUT)
+     SET(LIB_FILE ${LIB_NAME})
+   ENDIF()
+ 
+-  STRING(SUBSTRING ${LIB_NAME} 0 1 LIB_PREFIX)
++  IF(IS_ABSOLUTE "${LIB_NAME}")
++    SET(${LIB_OUT} "${LIB_NAME}" PARENT_SCOPE)
++    RETURN()
++  ENDIF()
++  STRING(SUBSTRING "${LIB_NAME}" 0 1 LIB_PREFIX)
+ 
+   IF(NOT ${LIB_PREFIX} STREQUAL "-")
+     SET(LIB_FILE "-l${LIB_FILE}")
+diff --git a/mariadb_config/libmariadb.pc.in b/mariadb_config/libmariadb.pc.in
+index 82608c8..4d357ba 100644
+--- a/mariadb_config/libmariadb.pc.in
++++ b/mariadb_config/libmariadb.pc.in
+@@ -14,7 +14,7 @@ Name: libmariadb
+ Version: @CPACK_PACKAGE_VERSION@
+ Description: MariaDB Connector/C dynamic library
+ Cflags: -I${includedir}
+-Libs: -L${libdir} -lmariadb
+-Libs.private: @extra_dynamic_LDFLAGS@
++Libs: -L${libdir} -lmariadb @extra_dynamic_LDFLAGS@
++Libs.private:
+ 
+ 
+-- 
+2.51.0

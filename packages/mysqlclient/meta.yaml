@@ -13,11 +13,6 @@ requirements:
     - libopenssl
     - libmariadb
 
-build:
-  script: |
-    export MYSQLCLIENT_CFLAGS="-I${WASM_LIBRARY_DIR}/include/mariadb -I${WASM_LIBRARY_DIR}/include"
-    export MYSQLCLIENT_LDFLAGS="-L${WASM_LIBRARY_DIR}/lib ${WASM_LIBRARY_DIR}/lib/libmariadb.a ${WASM_LIBRARY_DIR}/lib/libssl.a ${WASM_LIBRARY_DIR}/lib/libcrypto.a"
-
 test:
   imports:
     - MySQLdb
