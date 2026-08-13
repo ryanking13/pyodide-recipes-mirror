@@ -441,14 +441,6 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Cache conda
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/conda_pkgs_dir
-          key:
-            ${{ runner.os }}-conda-${{ env.CONDA_CACHE_NUMBER }}-${{
-            hashFiles('environment.yml') }}
-
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
         with:
@@ -457,23 +449,6 @@ jobs:
           activate-environment: pyodide-env
           conda-remove-defaults: true
           channels: conda-forge
-
-      - name: Get Date
-        id: get-date
-        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-
-      - name: Cache Conda env
-        id: conda-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ env.CONDA }}/envs
-          key:
-            conda-${{ runner.os }}-${{ steps.get-date.outputs.today }}-${{ hashFiles('environment.yml') }}-${{ env.CONDA_CACHE_NUMBER }}
-
-      - name: Update environment if cache miss
-        run:
-          mamba env update -n pyodide-env -f environment.yml
-        if: steps.conda-cache.outputs.cache-hit != 'true'
 
       - uses: pyodide/pyodide-actions/install-browser@012fa537869d343726d01863a34b773fc4d96a14 # v2
         with:
@@ -492,104 +467,22 @@ jobs:
           which python
           echo y | python -m pip install -r requirements.txt
 
-      - name: Set up database TLS assets
+      - name: Run DB integration tests
         env:
           MYSQL_SERVICE_ID: ${{ job.services.mysql.id }}
           POSTGRES_SERVICE_ID: ${{ job.services.postgres.id }}
-          PGPASSWORD: pyodide_root_pw
-        run: |
-          set -euxo pipefail
-          mkdir -p db-certs/postgres
-
-          docker cp "${MYSQL_SERVICE_ID}:/var/lib/mysql/ca.pem" db-certs/mysql-ca.pem
-
-          openssl genrsa -out db-certs/postgres/ca.key 2048
-          openssl req -x509 -new -nodes -key db-certs/postgres/ca.key -sha256 -days 1 -out db-certs/postgres/ca.crt -subj "/CN=pyodide-postgres-ca"
-          openssl genrsa -out db-certs/postgres/server.key 2048
-          openssl req -new -key db-certs/postgres/server.key -out db-certs/postgres/server.csr -subj "/CN=localhost"
-          cat > db-certs/postgres/server-ext.cnf <<'EOF'
-          subjectAltName=DNS:localhost,IP:127.0.0.1
-          extendedKeyUsage=serverAuth
-          EOF
-          openssl x509 -req -in db-certs/postgres/server.csr -CA db-certs/postgres/ca.crt -CAkey db-certs/postgres/ca.key -CAcreateserial -out db-certs/postgres/server.crt -days 1 -sha256 -extfile db-certs/postgres/server-ext.cnf
-
-          docker cp db-certs/postgres/server.crt "${POSTGRES_SERVICE_ID}:/var/lib/postgresql/data/server.crt"
-          docker cp db-certs/postgres/server.key "${POSTGRES_SERVICE_ID}:/var/lib/postgresql/data/server.key"
-          docker cp db-certs/postgres/ca.crt "${POSTGRES_SERVICE_ID}:/var/lib/postgresql/data/root.crt"
-          docker exec -u root "${POSTGRES_SERVICE_ID}" sh -c 'chown postgres:postgres /var/lib/postgresql/data/server.crt /var/lib/postgresql/data/server.key /var/lib/postgresql/data/root.crt && chmod 600 /var/lib/postgresql/data/server.key'
-          docker exec -e PGPASSWORD="${PGPASSWORD}" "${POSTGRES_SERVICE_ID}" psql -U postgres -d postgres -c "ALTER SYSTEM SET ssl = 'on';"
-          docker exec -e PGPASSWORD="${PGPASSWORD}" "${POSTGRES_SERVICE_ID}" psql -U postgres -d postgres -c "ALTER SYSTEM SET ssl_cert_file = 'server.crt';"
-          docker exec -e PGPASSWORD="${PGPASSWORD}" "${POSTGRES_SERVICE_ID}" psql -U postgres -d postgres -c "ALTER SYSTEM SET ssl_key_file = 'server.key';"
-
-          docker restart "${POSTGRES_SERVICE_ID}"
-
-          for attempt in {1..30}; do
-            if docker exec -e PGPASSWORD="${PGPASSWORD}" "${POSTGRES_SERVICE_ID}" pg_isready -U postgres -d postgres; then
-              break
-            fi
-            if [[ "${attempt}" -eq 30 ]]; then
-              echo "PostgreSQL service failed to become ready after TLS restart"
-              exit 1
-            fi
-            sleep 2
-          done
-
-      - name: Run DB integration tests
-        env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: "3306"
           MYSQL_USER: root
           MYSQL_PASSWORD: pyodide_root_pw
-          MYSQL_CA_FILE: ${{ github.workspace }}/db-certs/mysql-ca.pem
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_VERIFY_HOST: localhost
           POSTGRES_PORT: "5432"
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: pyodide_root_pw
           POSTGRES_DB: postgres
-          POSTGRES_CA_FILE: ${{ github.workspace }}/db-certs/postgres/ca.crt
-        run: |
-          set -euo pipefail
+        run: bash tools/test_db_integration.sh
 
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          lock = json.loads(Path("dist/pyodide-lock.json").read_text())
-          required = {"mysqlclient", "psycopg"}
-          missing = required.difference(lock["packages"])
-          if missing:
-              raise SystemExit(
-                  "DB integration packages missing from build: "
-                  + ", ".join(sorted(missing))
-              )
-          PY
-
-          pytest -v \
-            --dist-dir=./dist/ \
-            --runner=selenium \
-            --rt node \
-            -m db \
-            --junitxml=test-results-db.xml \
-            packages/mysqlclient/test_mysqlclient_e2e.py \
-            packages/psycopg/test_psycopg_e2e.py
-
-      - name: Surface failing tests
-        if: always()
-        uses: pmeier/pytest-results-action@fdc7f18d9934e38aca411ca9557e6577bd25ca9c # v0.9.0
-        with:
-          path: test-results-db.xml
-          summary: true
-          display-options: fE
-          fail-on-empty: true
-          title: "Test Results - db"
-
-      - name: Upload test results XML
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-results-db
-          path: test-results-db.xml
-        if: always()
 
   # This job runs the SciPy tests based on the
   # checks above, separate from the main test job.
