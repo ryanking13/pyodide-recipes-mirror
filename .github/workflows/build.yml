@@ -185,14 +185,6 @@ jobs:
             --base origin/${GITHUB_EVENT_PULL_REQUEST_BASE_REF} \
             --target ${{ github.sha }})
 
-          if [ "${DB_TEST_TRIGGER}" == "true" ]; then
-            for recipe in mysqlclient psycopg; do
-              if [[ ",${CHANGED_RECIPES}," != *",${recipe},"* ]]; then
-                CHANGED_RECIPES="${CHANGED_RECIPES:+${CHANGED_RECIPES},}${recipe}"
-              fi
-            done
-          fi
-
           echo "Changed recipes: $CHANGED_RECIPES"
 
           # Check if scipy should be included
