@@ -53,6 +53,7 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
     @run_in_pyodide(packages=["psycopg", "psycopg-c"])
     def run(selenium, config):
         import uuid
+        from contextlib import contextmanager
         from pathlib import Path
 
         import psycopg
@@ -63,6 +64,18 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
         ca_path = Path("/tmp/postgres-ca.pem")
         ca_path.write_text(config["ca_pem"], encoding="utf-8")
 
+        def connect_postgres(host, sslmode, **kwargs):
+            return psycopg.connect(
+                host=host,
+                port=config["port"],
+                user=config["user"],
+                password=config["password"],
+                dbname=config["dbname"],
+                sslmode=sslmode,
+                autocommit=True,
+                **kwargs,
+            )
+
         def fetch_ssl_row(connection):
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -70,30 +83,26 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
                 )
                 return cursor.fetchone()
 
-        with psycopg.connect(
-            host=config["host"],
-            port=config["port"],
-            user=config["user"],
-            password=config["password"],
-            dbname=config["dbname"],
-            sslmode="disable",
-            autocommit=True,
-        ) as connection:
+        @contextmanager
+        def drop_table(cursor, table_name):
+            try:
+                yield
+            finally:
+                cursor.execute(
+                    sql.SQL("DROP TABLE IF EXISTS {}").format(
+                        sql.Identifier(table_name)
+                    )
+                )
+
+        # without ssl
+        with connect_postgres(config["host"], "disable") as connection:
             row = fetch_ssl_row(connection)
             assert row[0] == 42
             assert row[1] is False
             assert row[2] in (None, "")
             assert row[3] in (None, "")
 
-        with psycopg.connect(
-            host=config["host"],
-            port=config["port"],
-            user=config["user"],
-            password=config["password"],
-            dbname=config["dbname"],
-            sslmode="require",
-            autocommit=True,
-        ) as connection:
+        with connect_postgres(config["host"], "require") as connection:
             row = fetch_ssl_row(connection)
             assert row[0] == 42
             assert row[1] is True
@@ -101,15 +110,10 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
             assert row[3]
 
         table_name = f"pyodide_psycopg_e2e_{uuid.uuid4().hex[:12]}"
-        with psycopg.connect(
-            host=config["verify_host"],
-            port=config["port"],
-            user=config["user"],
-            password=config["password"],
-            dbname=config["dbname"],
-            sslmode="verify-full",
+        with connect_postgres(
+            config["verify_host"],
+            "verify-full",
             sslrootcert=str(ca_path),
-            autocommit=True,
         ) as connection:
             row = fetch_ssl_row(connection)
             assert row[0] == 42
@@ -117,8 +121,8 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
             assert row[2]
             assert row[3]
 
-            try:
-                with connection.cursor() as cursor:
+            with connection.cursor() as cursor:
+                with drop_table(cursor, table_name):
                     cursor.execute(
                         sql.SQL(
                             "CREATE TABLE {} (id INTEGER PRIMARY KEY, note TEXT NOT NULL, amount INTEGER NOT NULL)"
@@ -138,12 +142,5 @@ def test_psycopg_database_driver_e2e(selenium_nodesock, postgres_connection_conf
                         (record[0],),
                     )
                     assert cursor.fetchone() == record
-            finally:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        sql.SQL("DROP TABLE IF EXISTS {}").format(
-                            sql.Identifier(table_name)
-                        )
-                    )
 
     run(selenium_nodesock, postgres_connection_config)
