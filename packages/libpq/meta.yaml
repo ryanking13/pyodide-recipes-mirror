@@ -46,7 +46,7 @@ build:
     emmake make -j ${PYODIDE_JOBS:-3} -C src/backend generated-headers
     emmake make -j ${PYODIDE_JOBS:-3} -C src/common libpgcommon_shlib.a
     emmake make -j ${PYODIDE_JOBS:-3} -C src/port libpgport_shlib.a
-    emmake make -j ${PYODIDE_JOBS:-3} -C src/interfaces/libpq all-static-lib
+    emmake make -j ${PYODIDE_JOBS:-3} -C src/interfaces/libpq install-lib-static
     emmake make -j ${PYODIDE_JOBS:-3} -C src/include all
 
     mkdir -p ${INSTALL_DIR}/bin ${INSTALL_DIR}/lib ${INSTALL_DIR}/include/libpq
@@ -55,11 +55,9 @@ build:
     cp src/include/pg_config.h src/include/pg_config_manual.h src/include/pg_config_os.h src/include/postgres_ext.h ${INSTALL_DIR}/include/
     cp src/include/libpq/libpq-fs.h ${INSTALL_DIR}/include/libpq/
 
-    # make libpq.a self contained without external dependencies
-    # libpq.a still references PostgreSQL frontend helpers and OpenSSL. `emar -M`
-    # reads the MRI command file below and copies every object from those input
-    # archives into one self-contained libpq.a. This lets extension builds link
-    # only with -lpq instead of knowing every transitive archive and link order.
+    # psycopg links only with -lpq. Unlike a shared library, static libpq.a does
+    # not pull in its dependent archives, so merge them into a self-contained
+    # archive instead of coupling every downstream package to their link order.
     cat > libpq-selfcontained.mri <<EOF
     create ${INSTALL_DIR}/lib/libpq.a
     addlib ${ROOT_DIR}/src/interfaces/libpq/libpq.a
@@ -73,6 +71,12 @@ build:
     emar -M < libpq-selfcontained.mri
     rm -f libpq-selfcontained.mri
     emranlib ${INSTALL_DIR}/lib/libpq.a
+
+    # The original pg_config is a binary file.
+    # downstream packages such as psycopg-c uses this binary to locate
+    # the header files and libraries, but we can't do that as we are cross-compiling
+    # the binary.
+    # Hence, create a single wrapper shell script that does the same thing.
 
     cat > ${INSTALL_DIR}/bin/pg_config <<EOF
     #!/bin/sh
