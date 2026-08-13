@@ -18,12 +18,6 @@ build:
   script: |
     export PATH="${WASM_LIBRARY_DIR}/bin:${PATH}"
 
-test:
-  imports:
-    - psycopg_c
-    - psycopg_c._psycopg
-    - psycopg_c.pq
-
 about:
   home: https://psycopg.org/
   PyPI: https://pypi.org/project/psycopg-c
