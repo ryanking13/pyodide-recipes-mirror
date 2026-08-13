@@ -1,0 +1,33 @@
+package:
+  name: mysqlclient
+  version: 2.2.8
+  top-level:
+    - MySQLdb
+
+source:
+  url: https://files.pythonhosted.org/packages/eb/b0/9df076488cb2e536d40ce6dbd4273c1f20a386e31ffe6e7cb613902b3c2a/mysqlclient-2.2.8.tar.gz
+  sha256: 8ed20c5615a915da451bb308c7d0306648a4fd9a2809ba95c992690006306199
+
+requirements:
+  host:
+    - libopenssl
+    - libmariadb
+
+build:
+  script: |
+    export MYSQLCLIENT_CFLAGS="-I${WASM_LIBRARY_DIR}/include/mariadb -I${WASM_LIBRARY_DIR}/include"
+    export MYSQLCLIENT_LDFLAGS="-L${WASM_LIBRARY_DIR}/lib ${WASM_LIBRARY_DIR}/lib/libmariadb.a ${WASM_LIBRARY_DIR}/lib/libssl.a ${WASM_LIBRARY_DIR}/lib/libcrypto.a"
+
+test:
+  imports:
+    - MySQLdb
+    - MySQLdb._mysql
+
+about:
+  home: https://github.com/PyMySQL/mysqlclient
+  PyPI: https://pypi.org/project/mysqlclient
+  summary: Python interface to MySQL backed by MariaDB Connector/C
+  license: GPL-2.0-or-later
+extra:
+  recipe-maintainers:
+    - ryanking13

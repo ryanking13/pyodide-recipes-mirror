@@ -74,7 +74,13 @@ def pytest_collection_modifyitems(config, items):
     config : pytest config
     items : list of collected items
     """
+    markexpr = config.getoption("-m", default="")
     for item in items:
+        if item.get_closest_marker("db") and "db" not in markexpr:
+            item.add_marker(
+                pytest.mark.skip(reason="db test skipped (use '-m db' to run)")
+            )
+            continue
         maybe_skip_test(item, delayed=True)
 
 
@@ -138,3 +144,17 @@ only_chrome = pytest.mark.xfail_browsers(
 requires_jspi = pytest.mark.xfail_browsers(
     firefox="requires jspi", safari="requires jspi"
 )
+
+
+@pytest.fixture(scope="function")
+def selenium_nodesock(selenium_standalone_refresh, runtime):
+    if runtime != "node":
+        pytest.skip("Only works in node")
+
+    selenium = selenium_standalone_refresh
+    selenium.run_js(
+        """
+        await pyodide.useNodeSockFS();
+        """
+    )
+    yield selenium

@@ -1,0 +1,85 @@
+package:
+  name: libmariadb
+  version: 3.4.9
+  tag:
+    - library
+    - static_library
+    - cmake
+
+source:
+  url: https://github.com/mariadb-corporation/mariadb-connector-c/archive/refs/tags/v3.4.9.tar.gz
+  sha256: 2c70b74393d589df0bde9b3e17cb7b571d30a45aaf006eda7a273120fb660f3a
+
+requirements:
+  host:
+    - libopenssl
+
+build:
+  type: static_library
+  script: |
+    export INSTALL_DIR=${WASM_LIBRARY_DIR}
+
+    CFLAGS="-fPIC" emcmake cmake -S . -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DINSTALL_LIBDIR=lib \
+      -DINSTALL_INCLUDEDIR=include/mariadb \
+      -DWITH_SSL=OPENSSL \
+      -DWITH_CURL=OFF \
+      -DWITH_SQLITE=OFF \
+      -DWITH_ICONV=OFF \
+      -DWITH_DYNCOL=OFF \
+      -DWITH_UNIT_TESTS=OFF \
+      -DOPENSSL_USE_STATIC_LIBS=TRUE \
+      -DOPENSSL_ROOT_DIR=${WASM_LIBRARY_DIR} \
+      -DOPENSSL_INCLUDE_DIR=${WASM_LIBRARY_DIR}/include \
+      -DOPENSSL_SSL_LIBRARY=${WASM_LIBRARY_DIR}/lib/libssl.a \
+      -DOPENSSL_CRYPTO_LIBRARY=${WASM_LIBRARY_DIR}/lib/libcrypto.a \
+      -DHAVE_LIBRESSL=FALSE \
+      -DLIBRESSL_RESULT=FALSE \
+      -DDEFAULT_SSL_VERIFY_SERVER_CERT=ON \
+      -DCLIENT_PLUGIN_AUTH_GSSAPI_CLIENT=OFF \
+      -DCLIENT_PLUGIN_CACHING_SHA2_PASSWORD=STATIC \
+      -DCLIENT_PLUGIN_CLIENT_ED25519=OFF \
+      -DCLIENT_PLUGIN_DIALOG=OFF \
+      -DCLIENT_PLUGIN_MYSQL_CLEAR_PASSWORD=OFF \
+      -DCLIENT_PLUGIN_MYSQL_OLD_PASSWORD=OFF \
+      -DCLIENT_PLUGIN_PARSEC=OFF \
+      -DCLIENT_PLUGIN_SHA256_PASSWORD=STATIC
+
+    emmake make -C build -j ${PYODIDE_JOBS:-3} mariadbclient
+
+    mkdir -p \
+      ${INSTALL_DIR}/lib \
+      ${INSTALL_DIR}/include/mariadb/mysql \
+      ${INSTALL_DIR}/include/mariadb/mariadb
+
+    cp build/libmariadb/libmariadbclient.a ${INSTALL_DIR}/lib/libmariadb.a
+    ln -sf libmariadb.a ${INSTALL_DIR}/lib/libmariadbclient.a
+
+    cp \
+      include/errmsg.h \
+      include/ma_list.h \
+      include/ma_pvio.h \
+      include/ma_tls.h \
+      include/mariadb_com.h \
+      include/mariadb_ctype.h \
+      include/mariadb_dyncol.h \
+      include/mariadb_rpl.h \
+      include/mariadb_stmt.h \
+      include/mysql.h \
+      include/mysqld_error.h \
+      build/include/mariadb_version.h \
+      ${INSTALL_DIR}/include/mariadb/
+
+    cp include/mysql/client_plugin.h include/mysql/plugin_auth.h ${INSTALL_DIR}/include/mariadb/mysql/
+    cp include/mariadb/ma_io.h ${INSTALL_DIR}/include/mariadb/mariadb/
+
+about:
+  home: https://github.com/mariadb-corporation/mariadb-connector-c
+  summary: MariaDB native client library
+  license: LGPL-2.1-or-later
+extra:
+  recipe-maintainers:
+    - ryanking13

@@ -1,0 +1,49 @@
+package:
+  name: libopenssl
+  version: 3.6.2
+  tag:
+    - library
+    - static_library
+
+source:
+  url: https://github.com/openssl/openssl/releases/download/openssl-3.6.2/openssl-3.6.2.tar.gz
+  sha256: aaf51a1fe064384f811daeaeb4ec4dce7340ec8bd893027eee676af31e83a04f
+  patches:
+    - patches/0001-Allow-getentropy-for-Emscripten.patch
+    - patches/0002-Use-send-recv-for-Emscripten-sockets.patch
+
+build:
+  type: static_library
+  script: |
+    export INSTALL_DIR=${WASM_LIBRARY_DIR}
+
+    CFLAGS="-fPIC -fvisibility=hidden" emconfigure ./Configure linux-generic32 \
+      no-shared \
+      no-asm \
+      no-tests \
+      no-apps \
+      no-docs \
+      no-dso \
+      no-engine \
+      no-module \
+      no-threads \
+      --with-rand-seed=getrandom \
+      --openssldir=/etc/ssl \
+      --libdir=lib \
+      --cross-compile-prefix= \
+      CC=emcc \
+      AR=emar \
+      RANLIB=emranlib \
+      NM=llvm-nm \
+      --prefix=${INSTALL_DIR}
+
+    emmake make -j ${PYODIDE_JOBS:-3} build_libs
+    emmake make -j ${PYODIDE_JOBS:-3} install_dev
+
+about:
+  home: https://www.openssl.org/
+  summary: OpenSSL 3 static libraries for native TLS consumers
+  license: Apache-2.0
+extra:
+  recipe-maintainers:
+    - ryanking13

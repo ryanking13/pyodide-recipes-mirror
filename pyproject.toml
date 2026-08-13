@@ -78,6 +78,9 @@ testpaths = [
     "packages",
 ]
 asyncio_mode = "strict"
+markers = [
+    "db: marks tests that require external database servers",
+]
 
 [tool.pyodide.build]
 rust_toolchain = "1.97.1"
