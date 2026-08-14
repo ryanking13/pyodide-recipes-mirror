@@ -22,13 +22,13 @@ def mysql_connection_config():
     ]
     missing = [name for name in required_names if not os.environ.get(name)]
     if missing:
-        pytest.skip(
+        pytest.fail(
             "Missing required MySQL test environment variables: " + ", ".join(missing)
         )
 
     ca_file = Path(os.environ["MYSQL_CA_FILE"])
     if not ca_file.is_file():
-        pytest.skip(f"MySQL CA file does not exist: {ca_file}")
+        pytest.fail(f"MySQL CA file does not exist: {ca_file}")
 
     return {
         "host": os.environ["MYSQL_HOST"],

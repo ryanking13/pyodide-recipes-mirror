@@ -25,14 +25,14 @@ def postgres_connection_config():
     ]
     missing = [name for name in required_names if not os.environ.get(name)]
     if missing:
-        pytest.skip(
+        pytest.fail(
             "Missing required PostgreSQL test environment variables: "
             + ", ".join(missing)
         )
 
     ca_file = Path(os.environ["POSTGRES_CA_FILE"])
     if not ca_file.is_file():
-        pytest.skip(f"PostgreSQL CA file does not exist: {ca_file}")
+        pytest.fail(f"PostgreSQL CA file does not exist: {ca_file}")
 
     return {
         "host": os.environ["POSTGRES_HOST"],
