@@ -465,7 +465,7 @@ jobs:
       - name: Install test dependencies
         run: |
           which python
-          echo y | python -m pip install -r requirements.txt
+          python -m pip install -r requirements.txt
 
       - name: Run DB integration tests
         env:
