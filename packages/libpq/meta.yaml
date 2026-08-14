@@ -40,9 +40,6 @@ build:
       --without-zlib \
       --without-zstd
 
-    # force USE_OPENSSL=1
-    grep -q '#define USE_OPENSSL 1' src/include/pg_config.h
-
     emmake make -j ${PYODIDE_JOBS:-3} -C src/backend generated-headers
     emmake make -j ${PYODIDE_JOBS:-3} -C src/common libpgcommon_shlib.a
     emmake make -j ${PYODIDE_JOBS:-3} -C src/port libpgport_shlib.a
@@ -78,31 +75,8 @@ build:
     # the binary.
     # Hence, create a single wrapper shell script that does the same thing.
 
-    cat > ${INSTALL_DIR}/bin/pg_config <<EOF
-    #!/bin/sh
-    case "\$1" in
-      --includedir)
-        printf '%s\n' "${INSTALL_DIR}/include"
-        ;;
-      --libdir)
-        printf '%s\n' "${INSTALL_DIR}/lib"
-        ;;
-      --libs)
-        printf '%s\n' "-lpq"
-        ;;
-      --ldflags)
-        printf '%s\n' "-L${INSTALL_DIR}/lib"
-        ;;
-      --version)
-        printf '%s\n' "PostgreSQL 18.4"
-        ;;
-      *)
-        printf '%s\n' "unsupported pg_config option: \$1" >&2
-        exit 1
-        ;;
-    esac
-    EOF
-    chmod +x ${INSTALL_DIR}/bin/pg_config
+    cp "${PKGDIR}/extras/pg_config" "${INSTALL_DIR}/bin/pg_config"
+    chmod +x "${INSTALL_DIR}/bin/pg_config"
 
 about:
   home: https://www.postgresql.org/

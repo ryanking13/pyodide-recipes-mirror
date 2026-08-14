@@ -1,0 +1,25 @@
+#!/bin/sh
+
+prefix=$(CDPATH= cd -P "$(dirname "$0")/.." && pwd)
+
+case "$1" in
+  --includedir)
+    printf '%s\n' "${prefix}/include"
+    ;;
+  --libdir)
+    printf '%s\n' "${prefix}/lib"
+    ;;
+  --libs)
+    printf '%s\n' "-lpq"
+    ;;
+  --ldflags)
+    printf '%s\n' "-L${prefix}/lib"
+    ;;
+  --version)
+    printf '%s\n' "PostgreSQL 18.4"
+    ;;
+  *)
+    printf '%s\n' "unsupported pg_config option: $1" >&2
+    exit 1
+    ;;
+esac
