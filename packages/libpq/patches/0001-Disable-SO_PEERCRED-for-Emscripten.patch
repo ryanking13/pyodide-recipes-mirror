@@ -6,6 +6,8 @@ Emscripten exposes the SO_PEERCRED constant but does not provide the struct
 ucred definition required by PostgreSQL's getpeereid implementation. Skip
 this Unix-domain socket credential path when building for Emscripten.
 
+TODO: either remove SO_PEERCRED from emscripten or implement getsockopt(SO_PEERCRED) in Emscripten
+
 ---
  src/port/getpeereid.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

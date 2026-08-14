@@ -4,6 +4,9 @@ Subject: [PATCH] Use Emscripten endian functions
 
 Emscripten provides the standard endian conversion functions in endian.h,
 but it was not detected properly.
+
+TODO: upstream this patch to psycopg
+
 ---
  psycopg_c/_psycopg.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
