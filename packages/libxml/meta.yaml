@@ -1,12 +1,12 @@
 package:
   name: libxml
-  version: 2.14.6
+  version: 2.15.3
   tag:
     - library
     - static_library
 source:
-  sha256: 7ce458a0affeb83f0b55f1f4f9e0e55735dbfc1a9de124ee86fb4a66b597203a
-  url: https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.6.tar.xz
+  sha256: 78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07
+  url: https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz
 
 requirements:
   host:
@@ -23,7 +23,6 @@ build:
         --without-python \
         --with-iconv="${WASM_LIBRARY_DIR}" \
         --with-zlib="${WASM_LIBRARY_DIR}" \
-        --with-lzma="no" \
         --prefix=${WASM_LIBRARY_DIR}
     emmake make -j ${PYODIDE_JOBS:-3}
     emmake make install
