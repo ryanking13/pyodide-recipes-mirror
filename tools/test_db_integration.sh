@@ -96,5 +96,6 @@ pytest -v \
   --rt node \
   -m db \
   --junitxml="${REPO_ROOT}/test-results-db.xml" \
+  "${REPO_ROOT}/packages/asyncpg/test_asyncpg_e2e.py" \
   "${REPO_ROOT}/packages/mysqlclient/test_mysqlclient_e2e.py" \
   "${REPO_ROOT}/packages/psycopg/test_psycopg_e2e.py"
