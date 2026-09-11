@@ -14,7 +14,7 @@ def maybe_skip_test(item, delayed=False):
     loading the selenium_standalone fixture which takes a long time.
     """
     browsers = "|".join(["firefox", "chrome", "node", "safari"])
-    is_common_test = str(item.fspath).endswith("test_packages_common.py")
+    is_common_test = str(item.fspath).endswith(("test_packages_common.py", "test_packages_dependency_resolution.py"))
 
     skip_msg = None
     # Testing a package. Skip the test if the package is not built.
