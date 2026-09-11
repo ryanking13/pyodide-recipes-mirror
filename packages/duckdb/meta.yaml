@@ -1,6 +1,8 @@
 package:
   name: duckdb
   version: 1.5.1
+  # Prebuilt wheel tagged pyemscripten_2026_0
+  _disabled: true
   top-level:
     - duckdb
 source:

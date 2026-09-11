@@ -10,7 +10,6 @@ source:
     - patches/0001-Skip-linking-cfitsio-and-healpix_cxx-programs-for-Py.patch
     - patches/0002-without-zlib-check-fortran.patch
     - patches/0003-install-path.patch
-    - patches/0004-disable-openmp.patch
 requirements:
   host:
     - libzlib
@@ -30,6 +29,16 @@ build:
     -fwasm-exceptions
   script: |
     export CXXFLAGS="$CXXFLAGS -sSIDE_MODULE=1"
+
+    # Since Emscripten 6.0.0 `-shared` produces a real side module by default
+    # so the vendored cfitsio and libsharp are real shared libraries and `-lcfitsio`
+    # resolves to the .so instead of the .a. autoconf's AC_CHECK_LIB probes a library
+    # by declaring the function itself as `char ffgnrwll (void);`, which does not match
+    # the real prototype, and across a shared library boundary wasm-ld promotes the
+    # resulting signature mismatch from a warning to an error.
+    # So healpix_cxx's configure concludes the libraries are missing and fails.
+    export ac_cv_lib_cfitsio_ffgnrwll=yes
+    export ac_cv_lib_sharp_sharp_execute=yes
 about:
   home: https://github.com/healpy/healpy
   PyPI: https://pypi.org/project/healpy

@@ -15,7 +15,6 @@ source:
     - patches/0002-Hardcode-font-cache-path.patch
     - patches/0003-Pyodide-webagg-backend.patch
     - patches/0004-Fix-32bit-casting.patch
-    - patches/0005-Use-system-freetype.patch
 
 build:
   backend-flags: |

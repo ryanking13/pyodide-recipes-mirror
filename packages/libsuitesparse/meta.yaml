@@ -23,7 +23,9 @@ build:
     grep -rl "void LAPACK" . | xargs sed -i 's/void LAPACK/int LAPACK/g'
     grep -rl "void BLAS" . | xargs sed -i 's/void BLAS/int BLAS/g'
 
+    # Force OPENMP off
     emmake make -j ${PYODIDE_JOBS:-3} install \
+      CFOPENMP= \
       LDFLAGS="${SIDE_MODULE_LDFLAGS} -L${WASM_LIBRARY_DIR}/lib " \
       BLAS="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
       LAPACK="${WASM_LIBRARY_DIR}/lib/libopenblas.so" \
