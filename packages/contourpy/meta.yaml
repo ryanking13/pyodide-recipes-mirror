@@ -8,6 +8,13 @@ source:
   url: https://files.pythonhosted.org/packages/source/c/contourpy/contourpy-1.3.3.tar.gz
   sha256: 083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880
 
+build:
+  # contourpy sets werror=true. Emscripten 6.0.3's clang enables
+  # -Wunused-template as part of -Wall, which fires in pybind11's headers and
+  # fails the build. Don't treat upstream warnings as errors.
+  backend-flags: |
+    setup-args=-Dwerror=false
+
 requirements:
   run:
     - numpy

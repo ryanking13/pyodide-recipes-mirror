@@ -10,7 +10,6 @@ source:
     - patches/0001-Skip-linking-cfitsio-and-healpix_cxx-programs-for-Py.patch
     - patches/0002-without-zlib-check-fortran.patch
     - patches/0003-install-path.patch
-    - patches/0004-disable-openmp.patch
 requirements:
   host:
     - libzlib
