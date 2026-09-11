@@ -1,0 +1,153 @@
+diff --git a/Configure.cmake b/Configure.cmake
+index e23f577..6741a6e 100644
+--- a/Configure.cmake
++++ b/Configure.cmake
+@@ -495,7 +495,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_SSE2)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   int main() {
+     __m128d r = _mm_mul_pd(_mm_set1_pd(1), _mm_set1_pd(2)); }"
+@@ -514,7 +514,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_SSE4)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   int main() {
+     __m128d r = _mm_floor_sd(_mm_set1_pd(1), _mm_set1_pd(2)); }"
+@@ -533,7 +533,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_AVX)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   int main() {
+     __m256d r = _mm256_add_pd(_mm256_set1_pd(1), _mm256_set1_pd(2));
+@@ -552,7 +552,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_FMA4)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   int main() {
+     __m256d r = _mm256_macc_pd(_mm256_set1_pd(1), _mm256_set1_pd(2), _mm256_set1_pd(3)); }"
+@@ -571,7 +571,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_AVX2)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   int main() {
+     __m256i r = _mm256_abs_epi32(_mm256_set1_epi32(1)); }"
+@@ -595,7 +595,7 @@ if(SLEEF_ARCH_X86 AND NOT SLEEF_DISABLE_AVX512F)
+   #if defined(_MSC_VER)
+   #include <intrin.h>
+   #else
+-  #include <x86intrin.h>
++  #include <immintrin.h>
+   #endif
+   __m512 addConstant(__m512 arg) {
+     return _mm512_add_ps(arg, _mm512_set1_ps(1.f));
+diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
+index 08b81b0..5596498 100644
+--- a/src/arch/helperavx.h
++++ b/src/arch/helperavx.h
+@@ -42,7 +42,7 @@
+ #if defined(_MSC_VER)
+ #include <intrin.h>
+ #else
+-#include <x86intrin.h>
++#include <immintrin.h>
+ #endif
+ 
+ #include <stdint.h>
+diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
+index 8e71de3..2872cd9 100644
+--- a/src/arch/helperavx2.h
++++ b/src/arch/helperavx2.h
+@@ -40,7 +40,7 @@
+ #if defined(_MSC_VER)
+ #include <intrin.h>
+ #else
+-#include <x86intrin.h>
++#include <immintrin.h>
+ #endif
+ 
+ #include <stdint.h>
+diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
+index 2d1142b..4fa0f8f 100644
+--- a/src/arch/helperavx2_128.h
++++ b/src/arch/helperavx2_128.h
+@@ -40,7 +40,7 @@
+ #if defined(_MSC_VER)
+ #include <intrin.h>
+ #else
+-#include <x86intrin.h>
++#include <immintrin.h>
+ #endif
+ 
+ #include <stdint.h>
+diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
+index 20c5118..2b3da9a 100644
+--- a/src/arch/helperavx512f.h
++++ b/src/arch/helperavx512f.h
+@@ -43,7 +43,7 @@
+ #if defined(_MSC_VER)
+ #include <intrin.h>
+ #else
+-#include <x86intrin.h>
++#include <immintrin.h>
+ #endif
+ 
+ #include <stdint.h>
+diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
+index 349f06e..d6bee48 100644
+--- a/src/arch/helpersse2.h
++++ b/src/arch/helpersse2.h
+@@ -46,7 +46,7 @@
+ #if defined(_MSC_VER)
+ #include <intrin.h>
+ #else
+-#include <x86intrin.h>
++#include <immintrin.h>
+ #endif
+ 
+ #include <stdint.h>
+diff --git a/src/common/misc.h b/src/common/misc.h
+index fadcd1a..c0a2bcf 100644
+--- a/src/common/misc.h
++++ b/src/common/misc.h
+@@ -281,9 +281,7 @@ typedef struct {
+ #define LIKELY(condition) (condition)
+ #define UNLIKELY(condition) (condition)
+ 
+-#if (defined(__GNUC__) || defined(__CLANG__)) && (defined(__i386__) || defined(__x86_64__)) && !defined(SLEEF_GENHEADER)
+-#include <x86intrin.h>
+-#endif
++#include <immintrin.h>
+ 
+ #define SLEEF_INFINITY (1e+300 * 1e+300)
+ #define SLEEF_NAN (SLEEF_INFINITY - SLEEF_INFINITY)
+diff --git a/src/libm/sleeflibm_header.h.org.in b/src/libm/sleeflibm_header.h.org.in
+index abf1d0a..b9ebf33 100644
+--- a/src/libm/sleeflibm_header.h.org.in
++++ b/src/libm/sleeflibm_header.h.org.in
+@@ -55,9 +55,7 @@ extern "C"
+ #define SLEEF_IMPORT
+ #endif // #if (defined(__MINGW32__) || defined(__MINGW64__) || defined(__CYGWIN__) || defined(_MSC_VER)) && !defined(SLEEF_STATIC_LIBS)
+ 
+-#if (defined(__GNUC__) || defined(__CLANG__)) && (defined(__i386__) || defined(__x86_64__))
+-#include <x86intrin.h>
+-#endif
++#include <immintrin.h>
+ 
+ #if (defined(_MSC_VER))
+ #include <intrin.h>

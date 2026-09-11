@@ -1,0 +1,23 @@
+package:
+  name: numpy-quaddtype
+  version: 1.0.0
+  top-level:
+    - numpy_quaddtype
+source:
+  url: https://files.pythonhosted.org/packages/e0/8b/7a88882808ac17a6f8d73253b785a969ea7acec34a2fd14425e4947bfae4/numpy_quaddtype-1.0.0.tar.gz
+  sha256: e2844e879dd6f4b44971e318d17cf2c5fa1f9fd2f04d0a50fe8813139e6dcf29
+requirements:
+  host:
+    - numpy
+    - libsleef
+  run:
+    - numpy
+build:
+  script: |
+    export CXXFLAGS="${CXXFLAGS} -I${WASM_LIBRARY_DIR}/include -sRELOCATABLE=1";
+    export LDFLAGS="${CFLAGS} -L${WASM_LIBRARY_DIR}/lib";
+about:
+  home: https://github.com/numpy/numpy-quaddtype
+  PyPI: https://pypi.org/project/numpy-quaddtype
+  summary: Quad (128-bit) float dtype for numpy
+  license: BSD-3-Clause

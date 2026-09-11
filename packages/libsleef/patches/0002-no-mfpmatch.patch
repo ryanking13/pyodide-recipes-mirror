@@ -1,0 +1,19 @@
+diff --git a/Configure.cmake b/Configure.cmake
+index 6741a6e..e029751 100644
+--- a/Configure.cmake
++++ b/Configure.cmake
+@@ -276,10 +276,10 @@ if(CMAKE_C_COMPILER_ID MATCHES "(GNU|Clang|QCC)")
+   set(FLAGS_FASTMATH "-ffast-math")
+   set(FLAGS_NOSTRICTALIASING "-fno-strict-aliasing")
+ 
+-  if (SLEEF_ARCH_X86 AND SLEEF_ARCH_32BIT)
+-    string(CONCAT FLAGS_STRICTMATH ${FLAGS_STRICTMATH} " -msse2 -mfpmath=sse")
+-    string(CONCAT FLAGS_FASTMATH ${FLAGS_FASTMATH} " -msse2 -mfpmath=sse")
+-  endif()
++  # if (SLEEF_ARCH_X86 AND SLEEF_ARCH_32BIT)
++  #   string(CONCAT FLAGS_STRICTMATH ${FLAGS_STRICTMATH} " -msse2 -mfpmath=sse")
++  #   string(CONCAT FLAGS_FASTMATH ${FLAGS_FASTMATH} " -msse2 -mfpmath=sse")
++  # endif()
+   
+   # Without the options below, gcc generates calls to libm
+   string(CONCAT FLAGS_OTHERS "-fno-math-errno -fno-trapping-math")

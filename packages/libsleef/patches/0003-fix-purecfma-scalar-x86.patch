@@ -1,0 +1,101 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8510913..817af3a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -91,6 +91,10 @@ option(SLEEF_ENFORCE_CUDA "Build fails if CUDA is not supported" OFF)
+ option(SLEEF_DISABLE_OPENMP "Disable OPENMP" OFF)
+ option(SLEEF_ENFORCE_OPENMP "Build fails if OPENMP is not supported by the compiler" OFF)
+ 
++# Option to disable PURECFMA scalar code path on x86 for x86-64-v2 compatibility
++# When ON, PURECFMA scalar dispatch is disabled (useful for Sandy Bridge support)
++# This can be set dynamically by the build system based on target CPU detection
++option(SLEEF_DISABLE_PURECFMA_SCALAR "Disable PURECFMA scalar code path (for x86-64-v2 compatibility)" OFF)
+ #
+ 
+ if ((NOT "${CMAKE_C_COMPILER_ID}" STREQUAL "${CMAKE_CXX_COMPILER_ID}") OR
+diff --git a/Configure.cmake b/Configure.cmake
+index e029751..8764b60 100644
+--- a/Configure.cmake
++++ b/Configure.cmake
+@@ -193,7 +193,12 @@ endif()
+ if(SLEEF_TARGET_PROCESSOR MATCHES "(x86|AMD64|amd64|^i.86$)")
+   set(SLEEF_ARCH_X86 ON CACHE INTERNAL "True for x86 architecture.")
+ 
+-  set(CLANG_FLAGS_ENABLE_PURECFMA_SCALAR "-mavx2;-mfma")
++  # Only set PURECFMA_SCALAR flags if not explicitly disabled
++  if(NOT SLEEF_DISABLE_PURECFMA_SCALAR)
++    set(CLANG_FLAGS_ENABLE_PURECFMA_SCALAR "-mavx2;-mfma")
++  else()
++    message(STATUS "PURECFMA_SCALAR disabled for x86-64-v2 compatibility")
++  endif()
+ elseif(SLEEF_TARGET_PROCESSOR MATCHES "aarch64|arm64")
+   set(SLEEF_ARCH_AARCH64 ON CACHE INTERNAL "True for Aarch64 architecture.")
+   # Aarch64 requires support for advsimdfma4
+@@ -220,7 +225,12 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
+ endif()
+ 
+ set(COMPILER_SUPPORTS_PUREC_SCALAR 1)
+-set(COMPILER_SUPPORTS_PURECFMA_SCALAR 1)
++# Conditionally enable PURECFMA_SCALAR based on option
++if(SLEEF_DISABLE_PURECFMA_SCALAR)
++  set(COMPILER_SUPPORTS_PURECFMA_SCALAR 0)
++else()
++  set(COMPILER_SUPPORTS_PURECFMA_SCALAR 1)
++endif()
+ 
+ # Compiler feature detection
+ 
+diff --git a/src/quad/CMakeLists.txt b/src/quad/CMakeLists.txt
+index 8e4e261..fd41d28 100644
+--- a/src/quad/CMakeLists.txt
++++ b/src/quad/CMakeLists.txt
+@@ -398,9 +398,17 @@ set_target_properties(qmkdisp PROPERTIES ${COMMON_TARGET_PROPERTIES})
+ 
+ # Target qdispscalar.c
+ 
++# Set scalar dispatch backends based on PURECFMA support
++# When SLEEF_DISABLE_PURECFMA_SCALAR is ON, use purec for both slots
++if(COMPILER_SUPPORTS_PURECFMA_SCALAR)
++  set(SCALAR_DISPATCH_BACKENDS "purec" "purecfma")
++else()
++  set(SCALAR_DISPATCH_BACKENDS "purec" "purec")
++endif()
++
+ add_custom_command(
+   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qdispscalar.c.body
+-  COMMAND $<TARGET_FILE:qmkdisp> 1 Sleef_quad double int32_t int64_t uint64_t purec purecfma > ${CMAKE_CURRENT_BINARY_DIR}/qdispscalar.c.body
++  COMMAND $<TARGET_FILE:qmkdisp> 1 Sleef_quad double int32_t int64_t uint64_t ${SCALAR_DISPATCH_BACKENDS} > ${CMAKE_CURRENT_BINARY_DIR}/qdispscalar.c.body
+   DEPENDS qmkdisp
+   )
+ sleef_concat_files(
+@@ -426,6 +434,11 @@ target_compile_definitions(qdispscalar_obj PRIVATE ${COMMON_TARGET_DEFINITIONS})
+ target_include_directories(qdispscalar_obj PRIVATE ${sleef_BINARY_DIR}/include)
+ add_dependencies(qdispscalar_obj qdispscalar.c_generated qrenamedspscalar.h_generated
+    sleefquad_headers ${TARGET_LIBSLEEF} ${TARGET_HEADERS})
++# Define ENABLE_PURECFMA when PURECFMA is supported, so qdispscalar.c.org
++# can conditionally include the tryFMA() function and SUBST_IF_EXT1 macro
++if(COMPILER_SUPPORTS_PURECFMA_SCALAR)
++  target_compile_definitions(qdispscalar_obj PRIVATE ENABLE_PURECFMA=1)
++endif()
+ target_sources(sleefquad PRIVATE $<TARGET_OBJECTS:qdispscalar_obj>)
+ 
+ if(DEFINED QMKDISP_PARAMS_X2)
+diff --git a/src/quad/qdispscalar.c.org b/src/quad/qdispscalar.c.org
+index c4c1292..48f309c 100644
+--- a/src/quad/qdispscalar.c.org
++++ b/src/quad/qdispscalar.c.org
+@@ -15,10 +15,14 @@
+ 
+ #include "qdispatcher.h"
+ 
++#ifdef ENABLE_PURECFMA
+ NOEXPORT Sleef_quad sleef_cpuid_QUADFMA_0;
+ static void tryFMA() { sleef_cpuid_QUADFMA_0 = Sleef_sinq1_u10purecfma(sleef_cpuid_QUADFMA_0); }
+ 
+ #define SUBST_IF_EXT1(funcExt1) if (cpuSupportsExt(tryFMA)) p = funcExt1;
++#else
++#define SUBST_IF_EXT1(funcExt1)
++#endif
+ 
+ //
+ 

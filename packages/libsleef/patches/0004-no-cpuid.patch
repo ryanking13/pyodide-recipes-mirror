@@ -1,0 +1,82 @@
+diff --git a/src/libm/dispavx.c.org b/src/libm/dispavx.c.org
+index 86a0148..e309af7 100644
+--- a/src/libm/dispavx.c.org
++++ b/src/libm/dispavx.c.org
+@@ -14,33 +14,15 @@
+ #include "sleef.h"
+ 
+ static int cpuSupportsAVX2() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 7, 0);
+-    ret = (reg[1] & (1 << 5)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ static int cpuSupportsFMA() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 1, 0);
+-    ret = (reg[2] & (1 << 12)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ static int cpuSupportsFMA4() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 0x80000001, 0);
+-    ret = (reg[2] & (1 << 16)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ #ifdef ENABLE_FMA4
+diff --git a/src/libm/dispsse.c.org b/src/libm/dispsse.c.org
+index 4e0d09b..1e9a875 100644
+--- a/src/libm/dispsse.c.org
++++ b/src/libm/dispsse.c.org
+@@ -14,33 +14,15 @@
+ #include "sleef.h"
+ 
+ static int cpuSupportsSSE4_1() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 1, 0);
+-    ret = (reg[2] & (1 << 19)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ static int cpuSupportsAVX2() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 7, 0);
+-    ret = (reg[1] & (1 << 5)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ static int cpuSupportsFMA() {
+-  static int ret = -1;
+-  if (ret == -1) {
+-    int32_t reg[4];
+-    Sleef_x86CpuID(reg, 1, 0);
+-    ret = (reg[2] & (1 << 12)) != 0;
+-  }
+-  return ret;
++  return 0;
+ }
+ 
+ #define SUBST_IF_EXT1(funcsse4) if (cpuSupportsSSE4_1()) p = funcsse4;
