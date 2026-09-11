@@ -178,6 +178,27 @@ jobs:
             ccache-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ env.PYODIDE_BUILD_VERSION }}-${{ runner.os }}${{ env.CCACHE_SUFFIX }}-
             ccache-${{ env.CCACHE_CACHE_NUMBER }}-${{ env.EMSCRIPTEN_VERSION }}-${{ env.PYODIDE_BUILD_VERSION }}-${{ runner.os }}
 
+      # ===== Wheel cache: compute fingerprints, restore, and apply mtime trick =====
+      - name: Compute build fingerprints
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: |
+          python tools/compute_build_plan.py --output build-plan.json
+
+      - name: Restore wheel cache
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: .wheel-cache
+          key: wheel-cache-v1-${{ hashFiles('build-plan.json') }}
+          restore-keys: |
+            wheel-cache-v1-
+
+      - name: Extract cached wheels
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: |
+          python tools/restore_build_cache.py --cache-dir .wheel-cache --build-plan build-plan.json
+      # ===== End wheel cache restore =====
+
       - name: Calculate recipes to build (pull_request)
         if: github.event_name == 'pull_request'
         id: calculate_recipes_pr
@@ -253,6 +274,20 @@ jobs:
           mkdir -p result
           pyodide build-recipes ${STEPS_CALCULATE_RECIPES_PR_OUTPUTS_RECIPES} --install --install-dir=./repodata --log-dir=build-logs | tee result/build_output.log
           ccache -s
+
+      # ===== Wheel cache: save built wheels =====
+      - name: Bundle wheels for cache
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: |
+          python tools/save_build_cache.py --build-plan build-plan.json --cache-dir .wheel-cache
+
+      - name: Save wheel cache
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: .wheel-cache
+          key: wheel-cache-v1-${{ hashFiles('build-plan.json') }}
+      # ===== End wheel cache save =====
 
       - name: Parse build results
         id: parse_results
