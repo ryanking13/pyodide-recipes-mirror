@@ -15,9 +15,10 @@ source:
     # functions in the BLIS f2c compat layer. The patch is needed for SciPy's test
     # suite to pass.
     - patches/0002-CBLAS-interface-for-crotg-zrotg-zdrot-and-csrot-926.patch
+    - patches/0003-WASM-ABI-void-returns-lsame-xerbla_array.patch
     # emcc 5.0.4 moved the deprecated `EMSCRIPTEN` macro into emscripten.h, so
     # BLIS's OS detection failed with "Cannot determine operating system".
-    - patches/0003-Feature-detect-Emscripten-with-__EMSCRIPTEN__.patch
+    - patches/0004-Feature-detect-Emscripten-with-__EMSCRIPTEN__.patch
 
 build:
   type: shared_library

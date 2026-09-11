@@ -84,6 +84,11 @@ tests_to_mark = [
     # scipy/linalg tests
     ("test_cython_abi.py::test_cython_blas_abi_stability", xfail, todo_signature_mismatch_msg),
     ("test_cython_abi.py::test_cython_lapack_abi_stability", xfail, todo_signature_mismatch_msg),
+    # This test intermittently freezes when run after the preceding linalg tests.
+    # However, it passes in isolation, and often in the full suite too). The module
+    # is the most Givens-rotation-heavy in SciPy and the frozen test varies run to run
+    # TODO: find why? Or run the tests in this file in a different order?
+    ("test_decomp_update.py.*test_overwrite_qr_p_row", skip, "intermittent wasm hang in the qr update/rotation path"),
     # scipy/ndimage/tests
     ("test_filters.py::TestThreading", xfail, thread_msg),
     # scipy/optimize/tests
@@ -283,21 +288,36 @@ def pytest_configure(config):  # noqa: ARG001
         pass
 
 
+EXIT_STATUS = 0
+
+
 @pytest.hookimpl(trylast=True)
 def pytest_sessionfinish(session, exitstatus):  # noqa: ARG001
-    # C-extension destructors in SciPy call Fortran functions with void/int
-    # signature mismatches. These run both
-    # during the gc cleanup (gc_collect_harder in _pytest/unraisableexception)
-    # and during Python's own finalization sequence, causing fatal errors that
-    # cannot be caught in Python as they crash the interpreter. Registering
-    # os._exit as an atexit handler as LIFO can at least bypass both of these.
-    # atexit is necessary for us here for allowing the terminal summary to
-    # print, since that happens in the terminal reporter's own
-    # pytest_sessionfinish which runs before this trylast hook.
-    import atexit
-    import os
+    # We stash the real pytest exit status so pytest_unconfigure can hand it
+    # to os._exit below. We need this hook for the test summary to be printed
+    # before we exit.
+    global EXIT_STATUS
+    EXIT_STATUS = int(exitstatus)
 
-    atexit.register(os._exit, int(exitstatus))
+
+def pytest_unconfigure(config):  # noqa: ARG001
+    # C-extension destructors in SciPy call Fortran functions with void/int
+    # signature mismatches. These run during Python's own finalization
+    # sequence and cause a fatal error that crashes the interpreter and,
+    # more importantly, makes Node.js report a non-zero exit code even when
+    # every test passed. os._exit here bypasses interpreter finalization entirely.
+    #
+    # pytest_unconfigure runs after the terminal reporter has printed its summary
+    # but while we are still in normal execution (before finalization), so the
+    # Emscripten ExitStatus it raises unwinds cleanly and Node.js maps it to the
+    # real exit code, instead of an exit-120 "error during finalization" path
+    # an atexit-scheduled os._exit seems to be hitting.
+    import os
+    import sys
+
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(EXIT_STATUS)
 
 
 def pytest_collection_modifyitems(config, items):

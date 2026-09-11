@@ -20,13 +20,10 @@ package:
 source:
   url: https://files.pythonhosted.org/packages/source/s/scipy/scipy-1.18.0.tar.gz
   sha256: 67b2ad2ad54c72ca6d04975a9b2df8c3638c34ddd5b28738e94fc2b57929d378
-
   patches:
-    - patches/0001-gemm_-no-const.patch
-    - patches/0002-make-int-return-values.patch
-    - patches/0003-Fix-gees-calls.patch
-    - patches/0004-Remove-chla_transtype.patch
-    - patches/0005-Set-wrapper-return-type-to-int.patch
+    # NOTE: Drop both of these patches with SciPy v1.19/2.0
+    - patches/0001-Fix-gees-calls.patch
+    - patches/0002-Fix-signatures-for-getrf-getri-and-trlib-dlagtm.patch
 build:
   vendor-sharedlib: true
   # NumPy 2.1 disabled visibility for symbols outside of extension modules
@@ -55,67 +52,16 @@ build:
   unvendor-tests: true
   # install-args=--tags=runtime,python-runtime,devel
   # Disable when running tests, enable when a PR is ready, i.e., building for distribution.
+  # TODO before merging: update to SciPy 1.19/2.0 when it arrives and drop -D_without-fortran=true
   backend-flags: |
     build-dir=build
-
-  # IMPORTANT: Other locations important in scipy build process:
-  # There are two files built in the "capture" pass that need patching:
-  #    _blas_subroutines.h, and _cython
-  # Scipy has a bunch of custom logic implemented in
-  # pyodide-build/pyodide_build/_f2c_fixes.py.
+    setup-args=-D_without-fortran=true
+    setup-args=-Dblas=blis
+    setup-args=-Dlapack=semicolon-lapack
   script: |
     set -x
-    git clone https://github.com/hoodmane/f2c.git --depth 1
-    (cd f2c/src && cp makefile.u makefile && sed -i "s/gram.c:/gram.c1:/" makefile && make)
-    export F2C_PATH=$(pwd)/f2c/src/f2c
 
-    echo F2C_PATH: $F2C_PATH
-    export NPY_BLAS_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
-    export NPY_LAPACK_LIBS="-I$WASM_LIBRARY_DIR/include $WASM_LIBRARY_DIR/lib/libopenblas.so"
-
-    sed -i 's/void DQA/int DQA/g' scipy/integrate/__quadpack.h
-
-    # Change many functions that return void into functions that return int
-    find scipy -name "*.c*" -type f | xargs sed -i 's/extern void F_FUNC/extern int F_FUNC/g'
-
-    sed -i 's/void F_FUNC/int F_FUNC/g' scipy/odr/__odrpack.c
-    sed -i 's/^void/int/g' scipy/odr/odrpack.h
-    sed -i 's/^void/int/g' scipy/odr/__odrpack.c
-
-    # sed -i 's/void F_FUNC/int F_FUNC/g' scipy/linalg/_lapack_subroutines.h
-    sed -i 's/void/int/g' scipy/linalg/cython_blas_signatures.txt
-    sed -i 's/void/int/g' scipy/linalg/cython_lapack_signatures.txt
-    sed -i 's/void BLAS_FUNC/int BLAS_FUNC/g' scipy/linalg/src/_common_array_utils.h
-    sed -i 's/^void BLAS_FUNC/int BLAS_FUNC/g' scipy/linalg/src/_common_array_utils.hh
-
-    # Change fortran functions called in C code to return int instead of void
-    # This adhoc regex checks function names ending with _ such as `void zgetrs_(`
-    sed -i 's/void BLAS_FUNC/int BLAS_FUNC/g' scipy/sparse/linalg/_propack/PROPACK/src/include/blaslapack_declarations.h
-    sed -i 's/void ARNAUD_BLAS/int ARNAUD_BLAS/g' scipy/sparse/linalg/_eigen/arpack/arnaud/src/blaslapack_declarations.h
-    sed -i 's/void BLAS_FUNC/int BLAS_FUNC/g' scipy/integrate/src/blaslapack_declarations.h
-    sed -i 's/void[[:space:]]*BLAS_FUNC/int BLAS_FUNC/g' scipy/optimize/src/blaslapack_declarations.h
-
-    sed -i 's/^void/int/g' scipy/interpolate/src/_fitpackmodule.c
-    sed -i 's/void BLAS_FUNC/int BLAS_FUNC/g' scipy/interpolate/src/__fitpack.h
-
-    sed -i 's/extern void/extern int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
-    sed -i 's/PUBLIC void/PUBLIC int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
-    sed -i 's/^void/int/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
-    sed -i 's/^void/int/g' scipy/sparse/linalg/_dsolve/*.{c,h}
-    sed -i 's/void \(.\)print/int \1/g' scipy/sparse/linalg/_dsolve/SuperLU/SRC/*.{c,h}
-    sed -i 's/TYPE_GENERIC_FUNC(\(.*\), void)/TYPE_GENERIC_FUNC(\1, int)/g' scipy/sparse/linalg/_dsolve/_superluobject.h
-
-    sed -i 's/^void/int/g' scipy/optimize/_trlib/trlib_private.h
-    sed -i 's/^void/int/g' scipy/_build_utils/src/wrap_dummy_g77_abi.c
-    sed -i 's/, int)/)/g' scipy/optimize/_trlib/trlib_private.h
-    sed -i 's/, 1)/)/g' scipy/optimize/_trlib/trlib_private.h
-
-    sed -i 's/^void/int/g' scipy/spatial/qhull_misc.h
-    sed -i 's/, size_t)/)/g' scipy/spatial/qhull_misc.h
-    sed -i 's/,1)/)/g' scipy/spatial/qhull_misc.h
-
-    # Input error causes "duplicate symbol" linker errors. Empty out the file.
-    echo "" > scipy/sparse/linalg/_dsolve/SuperLU/SRC/input_error.c
+    export PKG_CONFIG_PATH="${WASM_LIBRARY_DIR}/lib/pkgconfig:${WASM_LIBRARY_DIR}/share/pkgconfig:${PKG_CONFIG_PATH}"
 
     # https://github.com/mesonbuild/meson/blob/e542901af6e30865715d3c3c18f703910a096ec0/mesonbuild/backend/ninjabackend.py#L94
     # Prevent from using response file. The response file that meson generates is not compatible to pyodide-build
@@ -133,15 +79,11 @@ build:
 requirements:
   host:
     - numpy
-    - libopenblas
+    - libblis
+    - libsemilapack
     - libboost
   run:
     - numpy
-  executable:
-    - gfortran
-  constraint:
-    # Getting: Error: Dynamic linking error: cannot resolve symbol pow_di
-    - meson < 1.10
 test:
   imports:
     - scipy
@@ -165,7 +107,6 @@ test:
     - scipy.linalg.interpolative
     - scipy.misc
     - scipy.ndimage
-    - scipy.odr
     - scipy.optimize
     - scipy.signal
     - scipy.signal.windows

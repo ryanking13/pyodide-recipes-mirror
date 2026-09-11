@@ -1,7 +1,7 @@
 From b370cde2e14384ea86225bb464d63338e33a45cc Mon Sep 17 00:00:00 2001
 From: Edward Smyth <117460141+edwsmyth@users.noreply.github.com>
 Date: Sun, 28 Jun 2026 20:47:26 +0100
-Subject: [PATCH 2/3] CBLAS interface for crotg, zrotg, zdrot and csrot (#926)
+Subject: [PATCH 2/4] CBLAS interface for crotg, zrotg, zdrot and csrot (#926)
 
 Details:
 - Add CBLAS wrappers for missing complex rot APIs, as requested in

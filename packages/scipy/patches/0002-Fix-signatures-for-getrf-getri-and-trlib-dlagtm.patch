@@ -1,0 +1,90 @@
+From af8b0fc9a2164c29cf179e71f6e139406474b89c Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Fri, 10 Jul 2026 14:22:09 +0300
+Subject: [PATCH 2/2] Correct `?getrf`/`?getri` return types and `trlib` `dlagtm` ABI for strict-signature toolchains
+
+From https://github.com/scipy/scipy/pull/25592. Drop this with SciPy v1.19
+
+---
+ scipy/linalg/src/_common_array_utils.hh | 16 ++++++++--------
+ scipy/optimize/_trlib/trlib_private.h   |  6 ++++--
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/scipy/linalg/src/_common_array_utils.hh b/scipy/linalg/src/_common_array_utils.hh
+index 7b42d4ec18..e1fe742322 100644
+--- a/scipy/linalg/src/_common_array_utils.hh
++++ b/scipy/linalg/src/_common_array_utils.hh
+@@ -15,38 +15,38 @@
+ extern "C" {
+ 
+ /* ?GETRF */
+-CBLAS_INT
++void
+ BLAS_FUNC(sgetrf)(CBLAS_INT *m, CBLAS_INT *n, float a[], CBLAS_INT *lda,
+                   CBLAS_INT ipiv[], CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(dgetrf)(CBLAS_INT *m, CBLAS_INT *n, double a[], CBLAS_INT *lda,
+                   CBLAS_INT ipiv[], CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(cgetrf)(CBLAS_INT *m, CBLAS_INT *n, npy_complex64 a[], CBLAS_INT *lda,
+                   CBLAS_INT ipiv[], CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(zgetrf)(CBLAS_INT *m, CBLAS_INT *n, npy_complex128 a[], CBLAS_INT *lda,
+                   CBLAS_INT ipiv[], CBLAS_INT *info
+ );
+ 
+ 
+ /* ?GETRI */
+-CBLAS_INT
++void
+ BLAS_FUNC(sgetri)(CBLAS_INT *n, float a[], CBLAS_INT *lda, CBLAS_INT ipiv[],
+                   float work[], CBLAS_INT *lwork, CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(dgetri)(CBLAS_INT *n, double a[], CBLAS_INT *lda, CBLAS_INT ipiv[],
+                   double work[], CBLAS_INT *lwork, CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(cgetri)(CBLAS_INT *n, npy_complex64 a[], CBLAS_INT *lda, CBLAS_INT ipiv[],
+                   npy_complex64 work[], CBLAS_INT *lwork, CBLAS_INT *info
+ );
+-CBLAS_INT
++void
+ BLAS_FUNC(zgetri)(CBLAS_INT *n, npy_complex128 a[], CBLAS_INT *lda, CBLAS_INT ipiv[],
+                   npy_complex128 work[], CBLAS_INT *lwork, CBLAS_INT *info
+ );
+diff --git a/scipy/optimize/_trlib/trlib_private.h b/scipy/optimize/_trlib/trlib_private.h
+index 92bfabe51d..06abcc72f2 100644
+--- a/scipy/optimize/_trlib/trlib_private.h
++++ b/scipy/optimize/_trlib/trlib_private.h
+@@ -49,7 +49,9 @@ double BLAS_FUNC(ddot)(CBLAS_INT *n, double *x, CBLAS_INT *incx, double *y, CBLA
+ void BLAS_FUNC(dpttrf)(CBLAS_INT *n, double *d, double *e, CBLAS_INT *info);
+ void BLAS_FUNC(dpttrs)(CBLAS_INT *n, CBLAS_INT *nrhs, double *d, double *e, double *b, CBLAS_INT *ldb, CBLAS_INT *info);
+ void BLAS_FUNC(dptrfs)(CBLAS_INT *n, CBLAS_INT *nrhs, double *d, double *e, double *df, double *ef, double *b, CBLAS_INT *ldb, double *x, CBLAS_INT *ldx, double *ferr, double *berr, double *work, CBLAS_INT *info);
+-void BLAS_FUNC(dlagtm)(char *trans, CBLAS_INT *n, CBLAS_INT *nrhs, double *alpha, double *dl, double *d, double *du, double *x, CBLAS_INT *ldx, double *beta, double *b, CBLAS_INT *ldb, int);
++// dlagtm is declared without a trailing hidden Fortran
++// string length for trans. See gh-25592.
++void BLAS_FUNC(dlagtm)(char *trans, CBLAS_INT *n, CBLAS_INT *nrhs, double *alpha, double *dl, double *d, double *du, double *x, CBLAS_INT *ldx, double *beta, double *b, CBLAS_INT *ldb);
+ 
+ 
+ static void trlib_daxpy(trlib_int_t *n, double *alpha, double *x, trlib_int_t *incx, double *y, trlib_int_t *incy)
+@@ -108,7 +110,7 @@ static void trlib_dlagtm(char *trans, trlib_int_t *n, trlib_int_t *nrhs, double
+                          trlib_int_t *ldx, double *beta, double *b, trlib_int_t *ldb)
+ {
+     CBLAS_INT n_ = *n, nrhs_ = *nrhs, ldb_ = *ldb, ldx_ = *ldx;
+-    BLAS_FUNC(dlagtm)(trans, &n_, &nrhs_, alpha, dl, d, du, x, &ldx_, beta, b, &ldb_, 1);
++    BLAS_FUNC(dlagtm)(trans, &n_, &nrhs_, alpha, dl, d, du, x, &ldx_, beta, b, &ldb_);
+ }
+ 
+ 
+-- 
+2.50.1 (Apple Git-155)
+

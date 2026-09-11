@@ -1,0 +1,44 @@
+package:
+  name: libsemilapack
+  version: "0.01.3-pre"
+  tag:
+    - library
+    - shared_library
+source:
+  url: https://github.com/ilayn/semicolon-lapack/archive/refs/tags/v0.01.3-pre.tar.gz
+  sha256: 5292396b9c2bffc1bf22dccad7acbf9f4fcb1edc0c45ed0f055d80f55e2a23a3
+
+build:
+  type: shared_library
+  script: |
+    export PKG_CONFIG_PATH="${WASM_LIBRARY_DIR}/lib/pkgconfig:${WASM_LIBRARY_DIR}/share/pkgconfig:${PKG_CONFIG_PATH}"
+
+    CC=emcc CXX=em++ AR=emar \
+    meson setup builddir --cross-file "${MESON_CROSS_FILE}" \
+      -Dblas=blis \
+      -Dfabi_shim=true \
+      -Dtests=false \
+      --default-library=static \
+      --prefix="${WASM_LIBRARY_DIR}"
+    ninja -C builddir
+    ninja -C builddir install
+
+    mkdir -p dist
+    emcc ${WASM_LIBRARY_DIR}/lib/libsemilapack.a \
+        ${WASM_LIBRARY_DIR}/lib/libsemilapack_fortran.a \
+        ${WASM_LIBRARY_DIR}/lib/libblis.so \
+        ${SIDE_MODULE_LDFLAGS} \
+        -o dist/libsemilapack.so
+
+    cp dist/libsemilapack.so ${WASM_LIBRARY_DIR}/lib/libsemilapack.so
+requirements:
+  host:
+    - libblis
+  # TODO: explore whether libblis is needed at runtime, or if the CBLAS symbols
+  # can be resolved at build time and the libblis.so dependency dropped
+  run:
+    - libblis
+about:
+  home: https://github.com/ilayn/semicolon-lapack
+  license: BSD-3-Clause
+  summary: LAPACK linear algebra routines implemented in C

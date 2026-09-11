@@ -74,7 +74,6 @@ async def test_scipy_pytest(selenium):
         )
         assert result == 0
 
-    runtest("odr", "explicit")
     runtest("stats.tests.test_multivariate", "haar")
 
     # function signature mismatch with PROPACK, works with LOBPCG and ARPACK.
