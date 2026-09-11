@@ -1,0 +1,14 @@
+package:
+  name: coolname
+  version: 2.2.0
+  top-level:
+    - coolname
+
+source:
+  sha256: 4d1563186cfaf71b394d5df4c744f8c41303b6846413645e31d31915cdeb13e8
+  url: https://files.pythonhosted.org/packages/1b/b1/5745d7523d8ce53b87779f46ef6cf5c5c342997939c2fe967e607b944e43/coolname-2.2.0-py2.py3-none-any.whl
+
+about:
+  home: https://github.com/alexanderlukanin13/coolname
+  PyPI: https://pypi.org/project/coolname
+  license: BSD-2-Clause
