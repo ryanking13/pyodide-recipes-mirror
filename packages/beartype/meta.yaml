@@ -1,0 +1,17 @@
+package:
+  name: beartype
+  version: 0.22.9
+  top-level:
+    - beartype
+
+source:
+  sha256: d16c9bbc61ea14637596c5f6fbff2ee99cbe3573e46a716401734ef50c3060c2
+  url: https://files.pythonhosted.org/packages/71/cc/18245721fa7747065ab478316c7fea7c74777d07f37ae60db2e84f8172e8/beartype-0.22.9-py3-none-any.whl
+
+build:
+  unvendor-tests: false  # Actually, *test.py files are not tests but important functional parts of the package
+
+about:
+  home: https://github.com/beartype/beartype
+  PyPI: https://pypi.org/project/beartype
+  license: MIT
