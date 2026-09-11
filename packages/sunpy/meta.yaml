@@ -1,0 +1,23 @@
+package:
+  name: sunpy
+  version: 7.1.0
+  top-level:
+    - sunpy
+
+source:
+  url: https://files.pythonhosted.org/packages/source/s/sunpy/sunpy-7.1.0.tar.gz
+  sha256: 14fc177b66e233468c32a4da3479748405278271e2d1497b9dfb31a7f4a9340b
+
+build:
+  script: |
+    export SUNPY_NO_BUILD_ANA_EXTENSION=True
+
+about:
+  home: https://sunpy.org
+  PyPI: https://pypi.org/project/sunpy
+  summary: "SunPy core package: Python for Solar Physics"
+  license: BSD-2-Clause
+extra:
+  recipe-maintainers:
+    - cadiar
+    - samaloney
