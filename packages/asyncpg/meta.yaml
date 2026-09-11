@@ -1,0 +1,22 @@
+package:
+  name: asyncpg
+  version: 0.31.0
+  top-level:
+    - asyncpg
+
+source:
+  url: https://files.pythonhosted.org/packages/fe/cc/d18065ce2380d80b1bcce927c24a2642efd38918e33fd724bc4bca904877/asyncpg-0.31.0.tar.gz
+  sha256: c989386c83940bfbd787180f2b1519415e2d3d6277a70d9d0f0145ac73500735
+
+test:
+  imports:
+    - asyncpg
+
+about:
+  home: https://github.com/MagicStack/asyncpg
+  PyPI: https://pypi.org/project/asyncpg
+  summary: An asyncio PostgreSQL driver
+  license: Apache-2.0
+extra:
+  recipe-maintainers:
+    - ryanking13
