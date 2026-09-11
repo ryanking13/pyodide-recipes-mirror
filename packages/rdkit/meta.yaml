@@ -1,0 +1,91 @@
+package:
+  name: rdkit
+  version: 2025.9.6
+  top-level:
+    - rdkit
+
+source:
+  url: https://github.com/rdkit/rdkit/archive/refs/tags/Release_2025_09_6.tar.gz
+  sha256: 57b92e8f47d9dbd559bd808d5cf6c48a628bc36118bc35b832a35e2ca8a0c7a1
+  extract_dir: rdkit-Release_2025_09_6
+
+  extras:
+    - [extras/pyproject.toml, pyproject.toml]
+    - [extras/patch_init.py, patch_init.py]
+
+requirements:
+  host:
+    - librdkit
+    - numpy
+  run:
+    - librdkit
+    - numpy
+
+build:
+  script: |
+    set -e
+
+    STAGING=${WASM_LIBRARY_DIR}/share/rdkit
+
+    # Set version in pyproject.toml
+    sed -i "s/^version = .*/version = \"${PKG_VERSION}\"/" pyproject.toml
+
+    # ========================
+    # 1. Relink wrappers from staged .o files
+    # ========================
+    WRAPPER_COUNT=0
+    for wrapper_dir in ${STAGING}/wrappers/*/; do
+        modname=$(basename "$wrapper_dir")
+        obj_files=$(find "$wrapper_dir" -name '*.o' 2>/dev/null)
+        if [ -z "$obj_files" ]; then
+            echo "SKIP: $modname (no .o files)"
+            continue
+        fi
+        # Derive the correct output path from cmake's build.make
+        dest_path=$(grep -oP "rdkit/[^ ]*${modname}\.so" "$wrapper_dir/build.make" 2>/dev/null | head -1)
+        if [ -z "$dest_path" ]; then
+            echo "SKIP: $modname (no output path found)"
+            continue
+        fi
+        mkdir -p "$(dirname "$dest_path")"
+        em++ -fwasm-exceptions -sSIDE_MODULE=1 -O2 -shared \
+            $obj_files \
+            -L${WASM_LIBRARY_DIR}/lib -lrdkit_core \
+            -o "$dest_path"
+        echo "LINKED: $modname -> $dest_path"
+        WRAPPER_COUNT=$((WRAPPER_COUNT + 1))
+    done
+    echo "Total wrapper .so files: $WRAPPER_COUNT"
+
+    # ========================
+    # 2. Assemble Python package
+    # ========================
+    # Overlay cmake-generated Python files (e.g. inchi.py) from staging
+    cp -rn ${STAGING}/python/* rdkit/ 2>/dev/null || true
+
+    # Copy Data directory into package
+    cp -r ${STAGING}/Data rdkit/Data
+
+    # Rename .so -> .so.wasm (prevents micropip from auto-loading before
+    # core is ready — the core is loaded by Pyodide via the librdkit
+    # shared_library package with {global: true})
+    find rdkit -name "*.so" -exec sh -c 'mv "$1" "$1.wasm"' _ {} \;
+
+    # Patch __init__.py to set RDBASE and register custom import finder
+    python3 patch_init.py
+
+    echo "=== Package contents ==="
+    find rdkit -name "*.so.wasm" | sort
+    echo "---"
+    du -sh rdkit
+
+test:
+  imports:
+    - rdkit
+    - rdkit.Chem
+
+about:
+  home: https://github.com/rdkit/rdkit
+  PyPI: https://pypi.org/project/rdkit
+  summary: RDKit cheminformatics library for Pyodide
+  license: BSD-3-Clause

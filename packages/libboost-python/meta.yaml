@@ -1,0 +1,59 @@
+package:
+  name: libboost-python
+  version: 1.84.0
+  tag:
+    - library
+    - static_library
+
+source:
+  url: https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.gz
+  sha256: 4d27e9efed0f6f152dc28db6430b9d3dfb40c0345da7342eaa5a987dde57bd95
+
+requirements:
+  host:
+    - libzlib
+
+build:
+  type: static_library
+  script: |
+    # Patch boost.numpy for NumPy 2.x (PyArray_Descr->elsize removed)
+    sed -i 's/reinterpret_cast<PyArray_Descr\*>(ptr())->elsize/PyDataType_ELSIZE(reinterpret_cast<PyArray_Descr*>(ptr()))/' \
+        libs/python/src/numpy/dtype.cpp
+
+    ./bootstrap.sh --prefix=${WASM_LIBRARY_DIR} \
+        --with-libraries=system,python,serialization,iostreams \
+        --with-python=python${PYMAJOR}.${PYMINOR}
+
+    # https://github.com/emscripten-core/emscripten/issues/17052
+    # Without this, boost outputs WASM modules not static library archives.
+    printf "using clang : emscripten : emcc : <archiver>emar <ranlib>emranlib <linker>emlink ;\n" \
+        | tee -a ./project-config.jam
+
+    # Bypass standard python detection, specify cross-compilation paths
+    sed -i 's/using python/#using python/' ./project-config.jam
+    NUMPY_INC=$(python3 -c "import numpy; print(numpy.get_include())")
+    printf "using python : ${PYMAJOR}.${PYMINOR} : python${PYMAJOR}.${PYMINOR} : ${PYTHONINCLUDE} ${NUMPY_INC} ;\n" \
+        | tee -a ./project-config.jam
+
+    ./b2 variant=release toolset=clang-emscripten link=static threading=single \
+        address-model=32 --disable-icu \
+        cxxflags="$SIDE_MODULE_CXXFLAGS -fwasm-exceptions -std=c++20 -DBOOST_SP_DISABLE_THREADS=1" \
+        cflags="$SIDE_MODULE_CFLAGS -fwasm-exceptions -DBOOST_SP_DISABLE_THREADS=1" \
+        linkflags="-fpic $SIDE_MODULE_LDFLAGS" \
+        python=${PYMAJOR}.${PYMINOR} \
+        -sZLIB_INCLUDE=${WASM_LIBRARY_DIR}/include \
+        -sZLIB_LIBPATH=${WASM_LIBRARY_DIR}/lib \
+        --layout=system -j"${PYODIDE_JOBS:-3}" --prefix=${WASM_LIBRARY_DIR} \
+        install || true
+
+    # Verify key libraries were built
+    echo "=== Boost libraries ==="
+    ls -la ${WASM_LIBRARY_DIR}/lib/libboost_python*.a
+    ls -la ${WASM_LIBRARY_DIR}/lib/libboost_numpy*.a
+    ls -la ${WASM_LIBRARY_DIR}/lib/libboost_serialization*.a
+    ls -la ${WASM_LIBRARY_DIR}/lib/libboost_iostreams*.a
+
+about:
+  home: https://www.boost.org/
+  summary: Boost C++ libraries with Python and NumPy support for Emscripten
+  license: Boost
