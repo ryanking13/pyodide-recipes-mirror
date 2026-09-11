@@ -1,0 +1,29 @@
+package:
+  name: langchain-community
+  version: 0.3.27
+  top-level:
+    - langchain_community
+source:
+  url: https://files.pythonhosted.org/packages/py3/l/langchain_community/langchain_community-0.3.27-py3-none-any.whl
+  sha256: 581f97b795f9633da738ea95da9cb78f8879b538090c9b7a68c0aed49c828f0d
+requirements:
+  run:
+    - aiohttp
+    - numpy
+    - requests
+    - tenacity
+    - langchain-core
+    - sqlalchemy
+about:
+  home: https://github.com/langchain-ai/langchain
+  PyPI: https://pypi.org/project/langchain_community
+  summary: Community contributed LangChain integrations.
+  license: MIT
+extra:
+  recipe-maintainers:
+    - PUT_YOUR_GITHUB_USERNAME_HERE
+test:
+  imports:
+    - langchain_community
+    - langchain_community.chat_message_histories
+    - langchain_community.utilities

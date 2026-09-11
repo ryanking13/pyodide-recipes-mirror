@@ -1,0 +1,26 @@
+package:
+  name: langchain_openai
+  version: 0.3.28
+  top-level:
+    - langchain_openai
+source:
+  url: https://files.pythonhosted.org/packages/py3/l/langchain_openai/langchain_openai-0.3.28-py3-none-any.whl
+  sha256: 4cd6d80a5b2ae471a168017bc01b2e0f01548328d83532400a001623624ede67
+requirements:
+  run:
+    - numpy
+    - openai
+    - tiktoken
+    - langchain-core
+about:
+  home: https://github.com/langchain-ai/langchain
+  PyPI: https://pypi.org/project/langchain_openai
+  summary: An integration package connecting OpenAI and LangChain
+  license: MIT
+extra:
+  recipe-maintainers:
+    - PUT_YOUR_GITHUB_USERNAME_HERE
+test:
+  imports:
+    - langchain_openai
+    - langchain_openai.chat_models.base

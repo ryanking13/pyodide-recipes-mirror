@@ -1,0 +1,19 @@
+package:
+  name: requests-toolbelt
+  version: 1.0.0
+  top-level:
+    - requests_toolbelt
+source:
+  url: https://files.pythonhosted.org/packages/py2.py3/r/requests_toolbelt/requests_toolbelt-1.0.0-py2.py3-none-any.whl
+  sha256: cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06
+requirements:
+  run:
+    - requests
+about:
+  home: https://toolbelt.readthedocs.io/
+  PyPI: https://pypi.org/project/requests-toolbelt
+  summary: A utility belt for advanced users of python-requests
+  license: Apache 2.0
+extra:
+  recipe-maintainers:
+    - PUT_YOUR_GITHUB_USERNAME_HERE

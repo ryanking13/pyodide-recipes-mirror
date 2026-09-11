@@ -1,0 +1,19 @@
+package:
+  name: langchain-text-splitters
+  version: 0.3.9
+  top-level:
+    - langchain_text_splitters
+source:
+  url: https://files.pythonhosted.org/packages/e2/52/7638394b88bc15083fd2c3752a843784d9d2d110d68fed6437c8607fb749/langchain_text_splitters-0.3.9-py3-none-any.whl
+  sha256: cee0bb816211584ea79cc79927317c358543f40404bcfdd69e69ba3ccde54401
+requirements:
+  run:
+    - langchain-core
+about:
+  home: null
+  PyPI: https://pypi.org/project/langchain-text-splitters
+  summary: LangChain text splitting utilities
+  license: MIT
+extra:
+  recipe-maintainers:
+    - PUT_YOUR_GITHUB_USERNAME_HERE
