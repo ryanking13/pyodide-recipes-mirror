@@ -1,0 +1,36 @@
+package:
+  name: psycopg-binary
+  version: 3.3.5
+  top-level:
+    - psycopg_binary
+
+source:
+  # psycopg-binary applies the patch on top of psycopg-c before cython converts
+  # pyx files to c files, so we need to get the psycopg-c source, not the sdist in PyPI
+  url: https://github.com/psycopg/psycopg/archive/refs/tags/3.3.5.tar.gz
+  sha256: 7fcbf68e8f703a7dbf1a4ed9dec310e3c0ac202a469a8fed54a28cc0267352ed
+  extract_dir: psycopg-3.3.5/psycopg_c
+  patches:
+    - patches/0001-Use-Emscripten-endian-functions.patch
+  extras:
+    - [extras/copy_to_binary.py, copy_to_binary.py]
+
+requirements:
+  host:
+    - libpq
+
+build:
+  script: |
+    # psycopg-binary is actually a copy of psycopg-c with directories renamed to psycopg_binary
+    # https://github.com/psycopg/psycopg/blob/pool-3.3.1/tools/ci/copy_to_binary.py
+    python copy_to_binary.py
+    export PATH="${WASM_LIBRARY_DIR}/bin:${PATH}"
+
+about:
+  home: https://psycopg.org/
+  PyPI: https://pypi.org/project/psycopg-binary
+  summary: PostgreSQL database adapter for Python binary optimisation distribution
+  license: LGPL-3.0-only
+extra:
+  recipe-maintainers:
+    - ryanking13
