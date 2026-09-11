@@ -1,0 +1,22 @@
+package:
+  name: hdbscan
+  version: 0.8.41
+  top-level:
+  - hdbscan
+source:
+  url: 
+    https://files.pythonhosted.org/packages/source/h/hdbscan/hdbscan-0.8.41.tar.gz
+  sha256: e41e823e5bb21ff2173f252d226266b1dda82bdbba5d89106eafb251429dff3d
+requirements:
+  run:  
+    - setuptools
+    - scikit-learn
+    - numpy
+about:
+  home: http://github.com/scikit-learn-contrib/hdbscan
+  PyPI: https://pypi.org/project/hdbscan
+  summary: Clustering based on density with variable density clusters
+  license: BSD
+extra:
+  recipe-maintainers:
+  - JL2435
