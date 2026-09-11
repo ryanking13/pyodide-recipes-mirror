@@ -14,7 +14,7 @@ build:
   exports: whole_archive
   # These libs are built when building Pyodide main module, but might not be available when building out-of-tree
   script: |
-    embuilder build libdlmalloc libcompiler_rt-legacysjlj libc++-legacyexcept libc++abi-legacyexcept libunwind-legacyexcept --pic
+    embuilder build libdlmalloc libclang_rt.builtins-legacysjlj libc++-legacyexcept libc++abi-legacyexcept libunwind-legacyexcept --pic
 
     # Prevent CMake from linking against the system Python, which is 64bit and thus incompatible with our 32bit build.
     export CASADI_SETUP_CMAKE_ARGS="-DPYTHON_INCLUDE_DIR=$PYTHONINCLUDE"

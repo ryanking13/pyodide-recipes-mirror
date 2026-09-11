@@ -8,6 +8,8 @@ package:
 source:
   url: https://files.pythonhosted.org/packages/source/s/scikit_learn/scikit_learn-1.8.0.tar.gz
   sha256: 9bccbb3b40e3de10351f8f5068e105d0f4083b1a65fa07b6634fbc401a6287fd
+  patches:
+    - patches/0001-Do-not-use-OpenMP-on-Emscripten.patch
 
 build:
   cflags: -Wno-implicit-function-declaration

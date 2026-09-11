@@ -85,3 +85,4 @@ markers = [
 [tool.pyodide.build]
 rust_toolchain = "1.97.1"
 rustflags = ""
+default_cross_build_env_url="https://github.com/pyodide/pyodide-build-environment-nightly/releases/download/20260723-abi_2026_5/xbuildenv.tar.bz2"

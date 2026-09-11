@@ -29,6 +29,7 @@ env:
   CCACHE_DIR: /tmp/.ccache
   CCACHE_CACHE_NUMBER: 0
   FORCE_COLOR: 3
+  DEFAULT_CROSS_BUILD_ENV_URL: https://github.com/pyodide/pyodide-build-environment-nightly/releases/download/20260723-abi_2026_5/xbuildenv.tar.bz2
 
 jobs:
   check-scipy-test-trigger:

@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: pyodide <pyodide@pyodide.org>
+Date: Sun, 26 Jul 2026 20:18:00 +0200
+Subject: [PATCH] Do not use OpenMP on Emscripten
+
+Emscripten 6.0.3 added OpenMP support but Pyodide doesn't support threads.
+---
+ sklearn/meson.build | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/sklearn/meson.build b/sklearn/meson.build
+--- a/sklearn/meson.build
++++ b/sklearn/meson.build
+@@ -101,7 +101,12 @@
+ numpy_no_deprecated_api = ['-DNPY_NO_DEPRECATED_API=NPY_1_22_API_VERSION']
+ np_dep = declare_dependency(include_directories: inc_np, compile_args: numpy_no_deprecated_api)
+ 
+-openmp_dep = dependency('OpenMP', language: 'c', required: false)
++# Emscripten 6.0.3 added OpenMP support but Pyodide doesn't support threads.
++if host_machine.system() == 'emscripten'
++  openmp_dep = declare_dependency()
++else
++  openmp_dep = dependency('OpenMP', language: 'c', required: false)
++endif
+ 
+ if not openmp_dep.found()
+   warn_about_missing_openmp = true
