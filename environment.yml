@@ -3,7 +3,6 @@ channels:
   - conda-forge
 dependencies:
   - python=3.14.0
-  - nodejs=20
   - ccache
   - f2c
   # swiglpk has compatibility issue with 4.5 or upper

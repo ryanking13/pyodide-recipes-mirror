@@ -6,7 +6,7 @@ def test_psycopg_native_smoke(selenium):
     import psycopg
     from psycopg import conninfo, pq
 
-    assert psycopg.pq.__impl__ == "c"
+    assert psycopg.pq.__impl__ == "binary"
     assert pq.version() >= 180000
     assert pq.__build_version__ >= 180000
 
