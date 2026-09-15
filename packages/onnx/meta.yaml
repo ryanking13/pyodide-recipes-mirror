@@ -1,0 +1,19 @@
+package:
+  name: onnx
+  version: 1.20.0
+  top-level:
+    - onnx
+source:
+  url: https://files.pythonhosted.org/packages/source/o/onnx/onnx-1.20.0.tar.gz
+  sha256: 1a93ec69996b4556062d552ed1aa0671978cfd3c17a40bf4c89a1ae169c6a4ad
+about:
+  home: https://onnx.ai
+  PyPI: https://pypi.org/project/onnx
+  summary: Open Neural Network Exchange
+  license: Apache-2.0
+extra:
+  recipe-maintainers:
+    - justinchuby
+build:
+  script: |
+      export USE_NINJA=0
